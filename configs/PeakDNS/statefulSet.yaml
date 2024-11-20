@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: peakdns
+spec:
+  serviceName: peakdns
+  replicas: 1
+  selector:
+    matchLabels:
+      app: peakdns
+  template:
+    metadata:
+      labels:
+        app: peakdns
+    spec:
+      serviceAccountName: peakdns
+      terminationGracePeriodSeconds: 180
+      containers:
+        - name: peakdns
+          image: slenderman00/peakdns:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "dig @127.0.0.1 example.com A"
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "dig @127.0.0.1 example.com A"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          ports:
+            - containerPort: 53
+              protocol: UDP
+              name: dns-udp
+            - containerPort: 53
+              protocol: TCP
+              name: dns-tcp
+          volumeMounts:
+            - name: settings
+              mountPath: /app/settings.ini
+              subPath: settings.ini
+      volumes:
+        - name: settings
+          configMap:
+            name: peakdns-settings

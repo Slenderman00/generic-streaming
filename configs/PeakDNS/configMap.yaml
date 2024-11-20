@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: peakdns-settings
+data:
+  settings.ini: |
+    [logging]
+    path=./log.txt
+    logLevel=5
+    [server]
+    port=53
+    tcpThreads=10
+    udpThreads=10
+    [requester]
+    server=1.1.1.1
+    path=./zones
