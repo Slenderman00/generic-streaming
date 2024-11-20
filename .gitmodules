@@ -1,0 +1,3 @@
+[submodule "PeakDNS"]
+	path = PeakDNS
+	url = git@github.com:Slenderman00/PeakDNS.git
