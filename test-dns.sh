@@ -1,0 +1,1 @@
+dig @$(minikube ip) -p 53 some.domain

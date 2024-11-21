@@ -15,9 +15,9 @@
     
     echo "Applying new configuration..."
     # Apply configs in the root directory
-    if ls ./configs/*.yaml 1> /dev/null 2>&1; then
-        kubectl apply -f ./configs/
-    fi
+    #if ls ./configs/*.yaml 1> /dev/null 2>&1; then
+    kubectl apply -f ./configs
+    #fi
     
     # Apply configs in subdirectories
     for dir in ./configs/*/; do
