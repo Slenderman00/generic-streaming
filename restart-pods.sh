@@ -26,6 +26,9 @@
             kubectl apply -f "$dir"
         fi
     done
+
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
     
     echo "Waiting for pod to be ready..."
     kubectl wait --for=condition=ready pod/peakdns-0 --timeout=60s
