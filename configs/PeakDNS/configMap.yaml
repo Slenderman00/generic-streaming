@@ -9,8 +9,8 @@ data:
     logLevel=5
     [server]
     port=53
-    tcpThreads=10
-    udpThreads=10
+    tcpThreads=100
+    udpThreads=200
     [requester]
     server=1.1.1.1
     path=./zones
