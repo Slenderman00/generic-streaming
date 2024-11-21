@@ -4,12 +4,17 @@ metadata:
   name: peakdns
 spec:
   clusterIP: 10.96.0.11
+  type: NodePort
   ports:
     - port: 53
+      nodePort: 53 
       protocol: UDP
       name: dns-udp
+      targetPort: dns-udp
     - port: 53
+      nodePort: 53 
       protocol: TCP
       name: dns-tcp
+      targetPort: dns-tcp
   selector:
     app: peakdns
