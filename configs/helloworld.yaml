@@ -5,6 +5,24 @@ metadata:
   labels:
     dns.peak/domain: "hello.peak"
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: hello-world
+data:
+  nginx-status.conf: |
+    server {
+      listen 8080;
+      location /nginx_status {
+        stub_status on;
+        access_log off;
+        allow 127.0.0.1;
+        allow ::1;
+        allow all;
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,16 +37,97 @@ spec:
     metadata:
       labels:
         app: hello-world
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9113"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
-        - name: hello-world
-          image: nginx:latest
-          ports:
-            - containerPort: 80
-          resources:
-            requests:
-              memory: "64Mi"
-              cpu: "250m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/nginx-status.conf
+          subPath: nginx-status.conf
+      - name: nginx-exporter
+        image: nginx/nginx-prometheus-exporter:0.11.0
+        args:
+        - -nginx.scrape-uri=http://localhost:8080/nginx_status
+        ports:
+        - containerPort: 9113
+          name: metrics
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: hello-world
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    name: http
+  selector:
+    app: hello-world
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-metrics
+  namespace: hello-world
+  labels:
+    app: hello-world
+spec:
+  ports:
+  - port: 9113
+    targetPort: metrics
+    name: metrics
+  selector:
+    app: hello-world
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hello-world
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+    - hello-world
+  selector:
+    matchLabels:
+      app: hello-world
+  endpoints:
+  - port: metrics
+    interval: 15s
+  - port: metrics
+    path: /metrics
+    interval: 15s
+    honorLabels: true
+    metricRelabelings:
+    - action: keep
+      regex: "container_.*|pod_.*"
+      sourceLabels: [__name__]

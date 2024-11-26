@@ -9,8 +9,14 @@ data:
     logLevel=5
     [server]
     port=53
-    tcpThreads=100
-    udpThreads=200
+    tcpThreads=10
+    udpThreads=10
     [requester]
     server=1.1.1.1
     path=./zones
+    timeoutMs=2000
+    maxRetries=3
+    maxConcurrent=100
+    [cache]
+    cleanupInterval=1000
+    maxEntries=1000

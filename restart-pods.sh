@@ -1,6 +1,7 @@
 #!/bin/bash
 # Run cleanup and deployment in background while watching pods
 echo "Cleaning up existing resources..."
+helm uninstall prometheus -n monitoring
 kubectl delete statefulset peakdns
 kubectl delete service peakdns
 kubectl delete configmap peakdns-settings
@@ -50,9 +51,22 @@ for dir in ./configs/*/; do
 done
 
 # Apply external configurations (these don't need envsubst)
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+# kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+
+# Install
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+# First install Prometheus without the custom labels
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false
+
+# Then patch the namespace with your labels
+kubectl patch namespace monitoring --type=merge -p '{"metadata":{"labels":{"dns.peak/domain":"monitoring.peak","dns.peak/only-top":"false"}}}'
 
 echo "Waiting for pod to be ready..."
 kubectl wait --for=condition=ready pod/peakdns-0 --timeout=60s
+
 kubectl logs peakdns-0 -f
