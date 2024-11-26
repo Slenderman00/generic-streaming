@@ -7,6 +7,5 @@ docker run \
   --dns $(minikube ip) \
   --dns 8.8.8.8 \
   --network host \
-  --user 1000 \
   jess/firefox --no-sandbox
 docker rm firefox

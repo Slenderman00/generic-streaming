@@ -1,0 +1,1 @@
+PEAKDNS_IMAGE="slenderman00/peakdns:latest" $PEAKDNS_PULLPOL="Always" ./restart-pods.sh

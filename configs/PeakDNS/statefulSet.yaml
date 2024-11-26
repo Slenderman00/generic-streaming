@@ -17,8 +17,8 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
         - name: peakdns
-          image: slenderman00/peakdns:latest
-          imagePullPolicy: Always
+          image: $PEAKDNS_IMAGE
+          imagePullPolicy: $PEAKDNS_PULLPOL
           livenessProbe:
             exec:
               command:
