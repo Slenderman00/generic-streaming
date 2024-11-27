@@ -6,11 +6,11 @@ metadata:
 data:
   hello-world: |
     sum(
-      nginx_connections_active{container="nginx-exporter", namespace="%namespace%", pod="%pod-name%"} * 25
+      nginx_connections_active{container="nginx-exporter", namespace="%namespace%", pod="%pod-name%"}
     ) +
     sum(
-      rate(container_cpu_usage_seconds_total{namespace="%namespace%", pod="%pod-name%"}[1m]) * 50
+      rate(container_cpu_usage_seconds_total{namespace="%namespace%", pod="%pod-name%"}[5m])
     ) +
     sum(
-      container_memory_working_set_bytes{namespace="%namespace%", pod="%pod-name%"} / 1024 / 1024 * 25
+      container_memory_working_set_bytes{namespace="%namespace%", pod="%pod-name%"} / 1024 / 1024
     )
