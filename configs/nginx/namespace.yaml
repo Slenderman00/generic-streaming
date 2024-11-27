@@ -5,3 +5,5 @@ metadata:
   labels:
     dns.peak/domain: "hello.peak"
     dns.peak/loadbalance: "configmap.loadbalance-expressions.hello-world"
+    dns.peak/loadbalance-mode: excludeoverloaded
+    dns.peak/overload-threshold: 1.5
