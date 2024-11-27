@@ -4,7 +4,7 @@ metadata:
   name: peakdns-role
 rules:
   - apiGroups: [""]
-    resources: ["pods", "services", "nodes", "namespaces"]
+    resources: ["pods", "services", "nodes", "namespaces", "configmaps", "endpoints"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["pods", "nodes"]

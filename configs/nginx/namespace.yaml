@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-world
+  labels:
+    dns.peak/domain: "hello.peak"
+    dns.peak/loadbalance: "configmap.loadbalance-expressions.hello-world"

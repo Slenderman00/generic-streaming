@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hello-world
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+    - hello-world
+  selector:
+    matchLabels:
+      app: hello-world
+  endpoints:
+  - port: metrics
+    interval: 15s
+  - port: metrics
+    path: /metrics
+    interval: 15s
+    honorLabels: true
+    metricRelabelings:
+    - action: keep
+      regex: "container_.*|pod_.*"
+      sourceLabels: [__name__]

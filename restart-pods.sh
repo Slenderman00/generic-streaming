@@ -12,59 +12,18 @@ kubectl delete clusterrolebinding peakdns-binding
 echo "Waiting for pods to terminate..."
 kubectl wait --for=delete pod/peakdns-0 --timeout=60s 2>/dev/null || true
 
-echo "Applying new configuration..."
-
-# Create a temporary directory for processed configs
-TEMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TEMP_DIR"' EXIT
-
-
-# Process and apply configs in the root directory
-if [ -d "./configs" ]; then
-    for file in ./configs/*.yaml; do
-        if [ -f "$file" ]; then
-            echo "Processing $file..."
-            processed_file="$TEMP_DIR/$(basename "$file")"
-            envsubst < "$file" > "$processed_file"
-            cat $processed_file
-            kubectl apply -f "$processed_file"
-        fi
-    done
-fi
-
-# Process and apply configs in subdirectories
-for dir in ./configs/*/; do
-    if [ -d "$dir" ]; then
-        echo "Processing configurations in $dir..."
-        subdir="$TEMP_DIR/$(basename "$dir")"
-        mkdir -p "$subdir"
-        
-        for file in "$dir"*.yaml; do
-            if [ -f "$file" ]; then
-                processed_file="$subdir/$(basename "$file")"
-                envsubst < "$file" > "$processed_file"
-                cat $processed_file
-                kubectl apply -f "$processed_file"
-            fi
-        done
-    fi
-done
-
-# Apply external configurations (these don't need envsubst)
-# kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
-# Install
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-# First install Prometheus without the custom labels
+
+kubectl create namespace monitoring
 helm install prometheus prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
   --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
-  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false
+  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
 
-# Then patch the namespace with your labels
-kubectl patch namespace monitoring --type=merge -p '{"metadata":{"labels":{"dns.peak/domain":"monitoring.peak","dns.peak/only-top":"false"}}}'
+python3 k8s_apply.py ./configs
 
 echo "Waiting for pod to be ready..."
 kubectl wait --for=condition=ready pod/peakdns-0 --timeout=60s
