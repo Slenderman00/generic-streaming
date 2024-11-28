@@ -3,14 +3,17 @@ kind: Namespace
 metadata:
   name: dev-service
   labels:
-    dns.peak/domain: "client.peak"
-    dns.peak/only-top: "true"
+    dns.peak/domain: "auth.peak"
+    dns.peak/only-top: "false"
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   name: nodejs-dev
   namespace: dev-service
+  labels:
+    dns.peak/domain: "client.peak"
+    dns.peak/only-top: "true"
 spec:
   containers:
     - name: nodejs
@@ -19,12 +22,18 @@ spec:
       command: ["/bin/sh", "-c"]
       args:
         - |
-          npm install -g vite
+          cp package*.json /tmp/
+          cd /tmp
           npm install --force
-          vite --host
+          cd /app
+          cp -r /tmp/node_modules .
+          npm install -g vite
+          vite --host --force
       volumeMounts:
         - name: app-source
           mountPath: /app
+        - name: node-modules
+          mountPath: /app/node_modules
       ports:
         - containerPort: 5173
   volumes:
@@ -32,3 +41,5 @@ spec:
       hostPath:
         path: /root/client
         type: Directory
+    - name: node-modules
+      emptyDir: {}

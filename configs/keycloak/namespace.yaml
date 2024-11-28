@@ -4,4 +4,4 @@ metadata:
   name: auth-service
   labels:
     dns.peak/domain: "auth.peak"
-    dns.peak/only-top: "true"
+    dns.peak/only-top: "false"
