@@ -11,10 +11,10 @@ const Wave = () => (
                 className="absolute bottom-0 left-0 w-full h-full"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='%23A855F7'/%3E%3C/svg%3E")`,
-                    animation: 'wave 15s ease-in-out infinite alternate, waveMove 15s linear infinite',
-                    animationDelay: '0s',
+                    animation: 'wave 65s ease-in-out infinite alternate, waveMove 15s linear infinite',
+                    animationDelay: '11s',
                     opacity: '0.05',
-                    width: '200%',
+                    width: '220%',
                     height: '100%',
                     backgroundRepeat: 'repeat-x',
                     backgroundPosition: 'bottom',
@@ -25,10 +25,10 @@ const Wave = () => (
                 className="absolute bottom-0 left-0 w-full h-full"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='%23A855F7'/%3E%3C/svg%3E")`,
-                    animation: 'wave 20s ease-in-out infinite alternate',
-                    animationDelay: '-5s',
+                    animation: 'wave 49s ease-in-out infinite alternate',
+                    animationDelay: '-23s',
                     opacity: '0.1',
-                    width: '200%',
+                    width: '210%',
                     height: '100%',
                     backgroundRepeat: 'repeat-x',
                     backgroundPosition: 'bottom',
@@ -39,8 +39,8 @@ const Wave = () => (
                 className="absolute bottom-0 left-0 w-full h-full"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='%23A855F7'/%3E%3C/svg%3E")`,
-                    animation: 'wave 18s ease-in-out infinite alternate',
-                    animationDelay: '-7s',
+                    animation: 'wave 78s ease-in-out infinite alternate',
+                    animationDelay: '-42s',
                     opacity: '0.15',
                     width: '200%',
                     height: '100%',
