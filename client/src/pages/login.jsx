@@ -76,7 +76,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="h-screen relative flex items-center justify-center bg-gradient-to-b from-purple-900 via-purple-800 to-black overflow-hidden">
+        <div className="h-[calc(100vh-0.01px)] relative flex items-center justify-center bg-gradient-to-b from-purple-900 via-purple-800 to-black overflow-hidden">
             <Wave />
 
             <div className="w-full max-w-md p-6 relative z-10"
