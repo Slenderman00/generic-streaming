@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadbalance-expressions
+  namespace: auth-service
+data:
+  auth-service: |
+    sum(
+      rate(container_cpu_usage_seconds_total{namespace="%namespace%", pod="%pod-name%"}[5m])
+    ) +
+    sum(
+      container_memory_working_set_bytes{namespace="%namespace%", pod="%pod-name%"} / 1024 / 1024
+    )
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-config
+  namespace: auth-service
+data:
+  realm.json: |
+    {
+      "id": "streaming-service",
+      "realm": "streaming-service",
+      "enabled": true,
+      "displayName": "Streaming Service Realm",
+      "clients": [
+        {
+          "clientId": "generic-streaming-service",
+          "secret": "yeeeetrskeeeetr",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "publicClient": false,
+          "redirectUris": ["*"],
+          "webOrigins": ["*"]
+        }
+      ]
+    }
