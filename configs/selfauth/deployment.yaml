@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: auth-service
+  labels:
+    app: auth-service
+    dns.peak/domain: self.auth.peak
+    dns.peak/loadbalance: configmap.loadbalance-expressions.auth-service
+    dns.peak/loadbalance-mode: excludeoverloaded
+    dns.peak/overload-threshold: "1.5"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: localhost:5000/selfauth:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: PORT
+              value: "80"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_HOST
+              value: "postgres.auth-service.svc.cluster.local"
+            - name: POSTGRES_DB
+              value: "auth"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: JWT_SECRET
+          readinessProbe:
+            httpGet:
+              path: /auth/health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /auth/health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: auth-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: auth-service

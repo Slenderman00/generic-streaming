@@ -12,17 +12,22 @@ export default {
       extend: {
         animation: {
           'float': 'float 6s ease-in-out infinite',
+          'float2': 'float 6s ease-in-out infinite',
           'wave': 'wave 20s linear infinite alternate',
         },
         keyframes: {
           float: {
-            '0%, 100%': { transform: 'translateY(0)' },
-            '50%': { transform: 'translateY(-10px)' },
+            '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+            '50%': { transform: 'translate3d(0, -10px, 0)' },
+          },
+          float2: {
+            '0%, 100%': { transform: 'scale(1) translateY(0)' },
+            '50%': { transform: 'scale(0.2) translateY(-20px)' },
           },
           wave: {
-            '0%': { transform: 'translateX(0)' },
-            '50%': { transform: 'translateX(-50%)' },
-            '100%': { transform: 'translateX(0)' },
+            '0%': { transform: 'translate3d(0, 0, 0)' },
+            '50%': { transform: 'translate3d(-50%, 0, 0)' },
+            '100%': { transform: 'translate3d(0, 0, 0)' },
           },
         },
       },      

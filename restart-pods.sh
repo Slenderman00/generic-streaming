@@ -1,16 +1,16 @@
 #!/bin/bash
 # Run cleanup and deployment in background while watching pods
-echo "Cleaning up existing resources..."
-helm uninstall prometheus -n monitoring
-kubectl delete statefulset peakdns
-kubectl delete service peakdns
-kubectl delete configmap peakdns-settings
-kubectl delete serviceaccount peakdns
-kubectl delete clusterrole peakdns-role
-kubectl delete clusterrolebinding peakdns-binding
-
-echo "Waiting for pods to terminate..."
-kubectl wait --for=delete pod/peakdns-0 --timeout=60s 2>/dev/null || true
+# echo "Cleaning up existing resources..."
+# helm uninstall prometheus -n monitoring
+# kubectl delete statefulset peakdns
+# kubectl delete service peakdns
+# kubectl delete configmap peakdns-settings
+# kubectl delete serviceaccount peakdns
+# kubectl delete clusterrole peakdns-role
+# kubectl delete clusterrolebinding peakdns-binding
+# 
+# echo "Waiting for pods to terminate..."
+# kubectl wait --for=delete pod/peakdns-0 --timeout=60s 2>/dev/null || true
 
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 

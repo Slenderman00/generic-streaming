@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play } from "lucide-react";
+import { auth } from '@/frameworks/auth';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../frameworks/auth.js';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Wave = () => (
@@ -69,28 +69,47 @@ const Wave = () => (
     </div>
 );
 
-export default function LoginPage() {
+export default function RegisterPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setError('');
+    const validateForm = () => {
+        if (!username) return "Username is required";
+        if (username.length < 3) return "Username must be at least 3 characters";
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) return "Username can only contain letters, numbers, and underscores";
+        if (password.length < 8) return "Password must be at least 8 characters";
+        if (!/[A-Z]/.test(password)) return "Password must contain an uppercase letter";
+        if (!/[a-z]/.test(password)) return "Password must contain a lowercase letter";
+        if (!/[0-9]/.test(password)) return "Password must contain a number";
+        if (!/[^A-Za-z0-9]/.test(password)) return "Password must contain a special character";
+        if (password !== confirmPassword) return "Passwords do not match";
+        return "";
+    };
 
-        try {
-            const storage = rememberMe ? localStorage : sessionStorage;
-            const response = await auth.login(email, password, storage);
-            navigate('/');
-        } catch (err) {
-            setError(err.message || 'Invalid credentials');
-        } finally {
-            setIsLoading(false);
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
         }
+
+        setIsLoading(true);
+        auth.register(email, password, username)
+            .then(() => {
+                navigate('/');
+            })
+            .catch(err => {
+                setError(err.message || 'Registration failed');
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
     };
 
     return (
@@ -106,7 +125,7 @@ export default function LoginPage() {
 
                 <Card className="bg-black/60 backdrop-blur-sm border-zinc-800">
                     <CardHeader>
-                        <CardTitle className="text-2xl text-white text-center">Sign In</CardTitle>
+                        <CardTitle className="text-2xl text-white text-center">Create Account</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {error && (
@@ -114,7 +133,14 @@ export default function LoginPage() {
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
                         )}
-                        <form onSubmit={handleLogin} className="space-y-4">
+                        <form onSubmit={handleRegister} className="space-y-4">
+                            <Input
+                                type="text"
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="bg-zinc-800/50 border-zinc-700 text-white"
+                            />
                             <div className="space-y-2">
                                 <Input
                                     type="email"
@@ -133,40 +159,43 @@ export default function LoginPage() {
                                     className="bg-zinc-800/50 border-zinc-700 text-white"
                                 />
                             </div>
+                            <div className="space-y-2">
+                                <Input
+                                    type="password"
+                                    placeholder="Confirm Password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="bg-zinc-800/50 border-zinc-700 text-white"
+                                />
+                            </div>
                             <Button
                                 type="submit"
                                 className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Signing in...' : 'Sign In'}
+                                {isLoading ? 'Creating Account...' : 'Sign Up'}
                             </Button>
-                            <div className="flex justify-between text-sm text-zinc-400">
-                                <label className="flex items-center space-x-2">
-                                    <input 
-                                        type="checkbox" 
-                                        className="rounded bg-zinc-800 border-zinc-700"
-                                        checked={rememberMe}
-                                        onChange={(e) => setRememberMe(e.target.checked)}
-                                    />
-                                    <span>Remember me</span>
-                                </label>
-                                <a href="#" className="hover:underline">Need help?</a>
+                            <div className="text-sm text-zinc-400">
+                                By signing up, you agree to our{' '}
+                                <a href="#" className="text-white hover:underline">Terms</a>
+                                {' '}and{' '}
+                                <a href="#" className="text-white hover:underline">Privacy Policy</a>
                             </div>
                         </form>
 
                         <div className="mt-8">
                             <p className="text-zinc-400">
-                                New to Peak?{' '}
+                                Already have an account?{' '}
                                 <a href="#" className="text-white hover:underline" onClick={() => {
-                                    navigate('/register')
+                                    navigate('/login')
                                 }}>
-                                    Sign up now
+                                    Sign in
                                 </a>
                             </p>
                         </div>
                     </CardContent>
                 </Card>
-                <style>{`
+                <style jsx>{`
           @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
