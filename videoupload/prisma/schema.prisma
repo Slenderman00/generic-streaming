@@ -1,0 +1,19 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Video {
+  id          String   @id
+  userId      String
+  filename    String
+  status      String   @default("PENDING")
+  storagePath String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

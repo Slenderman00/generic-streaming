@@ -1,24 +1,37 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Page from '@/components/pages/page';
+import VideoFeed from '@/components/video/feed';
 
 const HomePage = () => {
 
-  return (
-    <div className="h-[calc(100vh-0.01px)] flex items-center justify-center bg-gradient-to-b from-purple-900 via-purple-800 to-black">
-      <Card className="max-w-md w-full p-6 bg-black/60 backdrop-blur-sm border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-2xl text-white text-center">Welcome to Peak</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-zinc-400 mb-6">
-            Peak is a powerful platform for analytics and insights. Get started today.
-          </p>
-          <div className="space-y-4">
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    const videoData = [
+        {
+            id: 1,
+            title: "Not pornography💪",
+            description: "I promise this is not porn 🔥",
+            author: "FitnessGuru",
+            authorAvatar: "/api/placeholder/40/40",
+            thumbnail: "/api/placeholder/640/360",
+            duration: "10:30",
+            timestamp: new Date(),
+            likes: 1200,
+            dislikes: 30,
+            views: 15000,
+            isPremium: true,
+            tags: ["Not", "Porn", "Thisisatag"],
+            comments: [
+              { id: 1, user: "John", text: "Amazing content!", timestamp: new Date() },
+              { id: 2, user: "Sarah", text: "Can't wait to try this", timestamp: new Date() }
+            ]
+          }
+    ];
+
+    return (
+        <Page>
+            <VideoFeed videos={videoData} />
+        </Page>
+    );
 };
 
 export default HomePage;

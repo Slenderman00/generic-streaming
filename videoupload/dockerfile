@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install
+
+COPY prisma/ ./prisma/
+
+RUN npx prisma generate
+
+COPY main.js .
+
+ENV PORT=80
+ENV CORS_ORIGIN=*
+
+EXPOSE 80
+
+RUN apk add --no-cache gettext
+CMD ["sh", "-c", "envsubst < ./prisma/schema.prisma > ./prisma/schema.prisma.tmp && mv ./prisma/schema.prisma.tmp ./prisma/schema.prisma && npx prisma generate && node main.js"]
