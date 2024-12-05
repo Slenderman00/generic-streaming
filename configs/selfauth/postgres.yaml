@@ -17,10 +17,10 @@ spec:
         - name: postgres
           image: postgres:15
           ports:
-            - containerPort: 5432
+            - containerPort: $AUTH_POSTGRES_PORT
           env:
             - name: POSTGRES_DB
-              value: "auth"
+              value: "$AUTH_POSTGRES_DB"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -58,7 +58,7 @@ metadata:
   namespace: auth-service
 spec:
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: $AUTH_POSTGRES_PORT
+      targetPort: $AUTH_POSTGRES_PORT
   selector:
     app: postgres

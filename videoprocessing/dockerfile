@@ -1,5 +1,7 @@
 FROM node:20-alpine
 
+RUN apk add --no-cache ffmpeg gettext postgresql-client
+
 WORKDIR /usr/src/app
 
 # Install dependencies including gettext and postgresql-client for health check
@@ -12,11 +14,13 @@ COPY prisma/ ./prisma/
 RUN npx prisma generate
 
 # Copy application code
-COPY main.js .
+COPY src/ ./src/
 
 # Set environment variables
 ENV PORT=80
 ENV CORS_ORIGIN=*
+ENV FFMPEG_PATH=/usr/bin/ffmpeg
+ENV FFPROBE_PATH=/usr/bin/ffprobe
 
 # Expose port
 EXPOSE 80

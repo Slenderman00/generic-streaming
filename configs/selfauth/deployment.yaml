@@ -39,11 +39,11 @@ spec:
                   name: auth-secrets
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_HOST
-              value: "postgres.auth-service.svc.cluster.local"
+              value: "$AUTH_POSTGRES_HOST"
             - name: POSTGRES_DB
               value: "auth"
             - name: POSTGRES_PORT
-              value: "5432"
+              value: "$AUTH_POSTGRES_PORT"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:

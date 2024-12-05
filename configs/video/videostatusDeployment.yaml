@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: video-upload
+  name: video-status
   namespace: video
   labels:
-    dns.peak/domain: video.upload.peak
+    dns.peak/domain: video.status.peak
     dns.peak/loadbalance: configmap.loadbalance-expressions.video-service
     dns.peak/loadbalance-mode: excludeoverloaded
     dns.peak/overload-threshold: "1.5"
@@ -12,15 +12,15 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: video-upload
+      app: video-status
   template:
     metadata:
       labels:
-        app: video-upload
+        app: video-status
     spec:
       containers:
-        - name: video-upload
-          image: localhost:5000/videoupload:latest
+        - name: video-status
+          image: localhost:5000/videostatus:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 80
@@ -45,11 +45,6 @@ spec:
               value: "$VIDEO_POSTGRES_DB"
             - name: POSTGRES_PORT
               value: "$VIDEO_POSTGRES_PORT"
-            - name: RABBITMQ_URL
-              valueFrom:
-                secretKeyRef:
-                  name: video-secrets
-                  key: rabbitmq-url
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -58,17 +53,6 @@ spec:
           volumeMounts:
             - name: nfs-storage
               mountPath: /nfsshare
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 80
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 80
-            initialDelaySeconds: 15
       volumes:
         - name: nfs-storage
           persistentVolumeClaim:
@@ -77,7 +61,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: video-upload-service
+  name: video-status-service
   namespace: video
 spec:
   type: ClusterIP
@@ -85,4 +69,4 @@ spec:
     - port: 80
       targetPort: 80
   selector:
-    app: video-upload
+    app: video-status

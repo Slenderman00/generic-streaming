@@ -10,7 +10,6 @@ const Navbar = () => {
         <span className="text-2xl font-bold text-purple-600 ml-2">peak</span>
       </div>
       <ul className="flex space-x-6">
-        {/* Add your navigation items here */}
         <li>
           <a href="#" className="text-purple-600 hover:text-purple-800">
             Home
@@ -33,12 +32,10 @@ const Navbar = () => {
 
 const Page = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-purple-100 via-purple-50 to-white py-8">
-      <div className="mb-8">
-        <Navbar />
-      </div>
-      <Card className="w-[80vw] h-[90vh] bg-white shadow-xl rounded-2xl overflow-hidden border border-purple-200">
-        <CardContent className="h-full p-8">{children}</CardContent>
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-purple-100 via-purple-50 to-white py-8 space-y-8">
+      <Navbar />
+      <Card className="w-[80vw] bg-white shadow-xl rounded-2xl overflow-hidden border border-purple-200">
+        <CardContent className="p-8">{children}</CardContent>
       </Card>
     </div>
   );

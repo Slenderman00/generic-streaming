@@ -5,12 +5,8 @@
   - Version:      9p2000.L
   - Message Size: 262144
   - Options:      map[]
-  - Bind Address: 192.168.49.1:36565
+  - Bind Address: 192.168.49.1:42551
 * Userspace file server: ufs starting
 * Successfully mounted /home/joar/Documents/generic-streaming/client to /root/client
 
 * NOTE: This process must stay alive for the mount to be accessible ...
-* Unmounting /root/client ...
-
-X Exiting due to MK_INTERRUPTED: Received terminated signal
-

@@ -118,6 +118,32 @@ class AuthSingleton {
     isAuthenticated() {
         return this.getToken() && !this.isTokenExpired();
     }
+
+    doRequest(url, options = {}) {
+        const token = this.getToken();
+        if (!token) {
+            return Promise.reject(new Error('No token available'));
+        }
+
+        if (!options.headers) {
+            options.headers = {};
+        }
+        options.headers.Authorization = `Bearer ${token}`;
+
+        return fetch(url, options)
+        .then(response => {
+            let newToken = response.headers.get('Authorization');
+            if (newToken) {
+                newToken = newToken.split(' ')[1];
+                this.saveToken({
+                    token: newToken,
+                    expires: response.headers.get('Token-Expires'),
+                    issued: response.headers.get('Token-Issued')
+                });
+            }
+            return response;
+        });
+    }
 }
 
 export const auth = new AuthSingleton({

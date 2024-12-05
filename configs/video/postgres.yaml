@@ -17,7 +17,7 @@ spec:
         - name: postgres
           image: postgres:15
           ports:
-            - containerPort: 5432
+            - containerPort: $VIDEO_POSTGRES_PORT
           env:
             - name: POSTGRES_DB
               value: "video"
@@ -58,7 +58,7 @@ metadata:
   namespace: video
 spec:
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: $VIDEO_POSTGRES_PORT
+      targetPort: $VIDEO_POSTGRES_PORT
   selector:
     app: postgres

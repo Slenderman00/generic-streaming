@@ -64,7 +64,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
+    fileSize: 10 * 1024 * 1024 * 1024, // 10GB limit
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('video/')) {
@@ -119,7 +119,7 @@ app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
     const video = await prisma.video.create({
       data: {
         id: videoId,
-        userId: req.user.id,
+        userId: req.user.userId,
         filename: req.file.originalname,
         status: 'PENDING',
         storagePath: storagePath,
@@ -130,7 +130,7 @@ app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
     await channel.sendToQueue('video_processing', Buffer.from(JSON.stringify({
       videoId: video.id,
       storagePath: storagePath,
-      userId: req.user.id,
+      userId: req.user.userId,
     })));
 
     res.status(200).json({
