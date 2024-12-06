@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: video
+  namespace: user
 spec:
   replicas: 1
   selector:
@@ -17,19 +17,19 @@ spec:
         - name: postgres
           image: postgres:15
           ports:
-            - containerPort: $VIDEO_POSTGRES_PORT
+            - containerPort: $USER_POSTGRES_PORT
           env:
             - name: POSTGRES_DB
-              value: "$VIDEO_POSTGRES_USER"
+              value: "user"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: video-secrets
+                  name: user-secrets
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: video-secrets
+                  name: user-secrets
                   key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-storage
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
-  namespace: video
+  namespace: user
 spec:
   accessModes:
     - ReadWriteOnce
@@ -55,10 +55,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: video
+  namespace: user
 spec:
   ports:
-    - port: $VIDEO_POSTGRES_PORT
-      targetPort: $VIDEO_POSTGRES_PORT
+    - port: $USER_POSTGRES_PORT
+      targetPort: $USER_POSTGRES_PORT
   selector:
     app: postgres

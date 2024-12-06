@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+# Install dependencies including gettext and postgresql-client for health check
+COPY package*.json ./
+RUN npm install
+RUN apk add --no-cache gettext postgresql-client
+
+# Copy Prisma files and generate client
+COPY prisma/ ./prisma/
+RUN npx prisma generate
+
+# Copy application code
+COPY main.js .
+
+# Set environment variables
+ENV PORT=80
+ENV CORS_ORIGIN=*
+
+# Expose port
+EXPOSE 80
+
+COPY start.sh .
+
+# Use the startup script as entrypoint
+CMD ["/usr/src/app/start.sh"]

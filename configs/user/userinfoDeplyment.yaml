@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-info
+  namespace: user
+  labels:
+    dns.peak/domain: user.info.peak
+    dns.peak/loadbalance: configmap.loadbalance-expressions.user-service
+    dns.peak/loadbalance-mode: excludeoverloaded
+    dns.peak/overload-threshold: "1.5"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: user-info
+  template:
+    metadata:
+      labels:
+        app: user-info
+    spec:
+      containers:
+        - name: user-info
+          image: localhost:5000/userinfo:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: PORT
+              value: "80"
+            - name: POSTGRES_HOST
+              value: "$VIDEO_POSTGRES_HOST"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: video-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: video-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: "$VIDEO_POSTGRES_DB"
+            - name: POSTGRES_PORT
+              value: "$VIDEO_POSTGRES_PORT"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: video-secrets
+                  key: JWT_SECRET
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-info-service
+  namespace: video
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: user-info
