@@ -132,28 +132,46 @@ class AuthSingleton {
     doRequest(url, options = {}) {
         const token = this.getToken();
         if (!token) {
-            return Promise.reject(new Error('No token available'));
+          return Promise.reject(new Error('No token available'));
         }
-
+      
+        // Parse the JWT token to get exp and iat
+        const parseJWT = (token) => {
+          try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+              '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+          } catch (error) {
+            console.error('Error parsing JWT:', error);
+            return null;
+          }
+        };
+      
         if (!options.headers) {
-            options.headers = {};
+          options.headers = {};
         }
         options.headers.Authorization = `Bearer ${token}`;
-
+      
         return fetch(url, options)
-        .then(response => {
+          .then(response => {
             let newToken = response.headers.get('Authorization');
             if (newToken) {
-                newToken = newToken.split(' ')[1];
+              newToken = newToken.split(' ')[1];
+              const tokenPayload = parseJWT(newToken);
+              if (tokenPayload) {
                 this.saveToken({
-                    token: newToken,
-                    expires: response.headers.get('Token-Expires'),
-                    issued: response.headers.get('Token-Issued')
+                  token: newToken,
+                  expires: tokenPayload.exp,
+                  issued: tokenPayload.iat
                 });
+              }
             }
             return response;
-        });
-    }
+          });
+      }
 }
 
 export const auth = new AuthSingleton({

@@ -36,39 +36,59 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Endpoint to append video IDs to token
+// Token generation helper to match auth service
+const generateToken = (userId, email, username, videoIds) => {
+  const now = Math.floor(Date.now() / 1000);
+  const exp = now + (60 * 60); // 1 hour expiration
+
+  const token = jwt.sign(
+      { userId, email, username, videoIds, iat: now, exp },
+      process.env.JWT_SECRET
+  );
+
+  return {
+      token,
+      issued: new Date(now * 1000).toISOString(),
+      expires: new Date(exp * 1000).toISOString()
+  };
+};
+
+// Updated append-videos endpoint
 app.get('/append-videos', verifyToken, async (req, res) => {
   try {
-    const videos = await prisma.video.findMany({
-      where: {
-        userId: req.user.userId
-      },
-      select: {
-        id: true
-      }
-    });
+      const videos = await prisma.video.findMany({
+          where: {
+              userId: req.user.userId
+          },
+          select: {
+              id: true
+          }
+      });
 
-    const videoIds = videos.map(video => video.id);
+      const videoIds = videos.map(video => video.id);
 
-    const enhancedPayload = {
-      ...req.user,
-      videoIds: videoIds,
-      enhancedAt: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiration
-    };
+      // Generate token using the same pattern as auth service
+      const tokenData = generateToken(
+          req.user.userId,
+          req.user.email,
+          req.user.username,
+          videoIds
+      );
 
-    const enhancedToken = jwt.sign(enhancedPayload, process.env.JWT_SECRET);
+      // Set the new token in the Authorization header
+      res.set('Authorization', `Bearer ${tokenData.token}`);
 
-    // Set the new token in the Authorization header
-    res.set('Authorization', `Bearer ${enhancedToken}`);
-
-    res.json({
-      expires: new Date(enhancedPayload.exp * 1000).toISOString(),
-      videoCount: videoIds.length
-    });
+      res.json({
+          status: 'SUCCESS',
+          ...tokenData,
+          videoCount: videoIds.length
+      });
   } catch (error) {
-    console.error('Error appending videos to token:', error);
-    res.status(500).json({ error: 'Failed to append videos to token' });
+      console.error('Error appending videos to token:', error);
+      res.status(500).json({ 
+          status: 'ERROR',
+          error: 'Failed to append videos to token' 
+      });
   }
 });
 
@@ -142,10 +162,6 @@ app.get('/videos', verifyToken, async (req, res) => {
 // Get detailed status for a specific video
 app.get('/videos/:videoId', verifyToken, async (req, res) => {
   try {
-    if (req.user.videoIds && !req.user.videoIds.includes(req.params.videoId)) {
-      return res.status(403).json({ error: 'Video access not authorized' });
-    }
-
     const video = await prisma.video.findFirst({
       where: {
         id: req.params.videoId,
