@@ -36,10 +36,10 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Token generation helper to match auth service
-const generateToken = (userId, email, username, videoIds) => {
+const generateToken = (userId, email, username, videoIds, existingExp) => {
   const now = Math.floor(Date.now() / 1000);
-  const exp = now + (60 * 60); // 1 hour expiration
+  // Use the existing token's expiration time instead of creating a new one
+  const exp = existingExp;
 
   const token = jwt.sign(
       { userId, email, username, videoIds, iat: now, exp },
@@ -67,12 +67,13 @@ app.get('/append-videos', verifyToken, async (req, res) => {
 
       const videoIds = videos.map(video => video.id);
 
-      // Generate token using the same pattern as auth service
+      // Generate token using the expiration time from the current token
       const tokenData = generateToken(
           req.user.userId,
           req.user.email,
           req.user.username,
-          videoIds
+          videoIds,
+          req.user.exp // Use the expiration from the verified token
       );
 
       // Set the new token in the Authorization header
