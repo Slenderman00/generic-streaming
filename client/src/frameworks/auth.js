@@ -15,6 +15,16 @@ class AuthSingleton {
         return localStorage.getItem('token');
     }
 
+    getTokenContents() {
+        const token = this.getToken();
+        if (!token) return null;
+        try {
+            return JSON.parse(atob(token.split('.')[1]));
+        } catch {
+            return null;
+        }
+    }
+
     isTokenExpired() {
         let expires;
         if (sessionStorage.getItem('token')) {

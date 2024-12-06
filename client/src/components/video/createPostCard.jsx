@@ -35,7 +35,7 @@ const SUPPORTED_FORMATS = [
 const MAX_VIDEOS = 3;
 const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10
 
-const CreatePostCard = ({ onSubmit }) => {
+const CreatePostCard = () => {
   const [postText, setPostText] = useState('');
   const [videos, setVideos] = useState([]);
   const [uploadStatus, setUploadStatus] = useState({});
@@ -230,10 +230,35 @@ const CreatePostCard = ({ onSubmit }) => {
             .filter(v => v.status === 'completed')
             .map(v => v.id);
           
-          onSubmit({
-            text: postText,
-            videoIds: successfulIds
+          // submit post
+          auth.doRequest(`${video_status_url}/append-videos`).then(response => {
+            if (!response.ok) {
+              throw new Error('Failed to submit post');
+            }
+            //check if the token contains the ids of the videos that were uploaded
+            //if it does, the video upload is valid
+            let tokenContent = auth.getTokenContents();
+            //the token should contain all the ids of videos that belong to the user
+            //therefor we must check if each of the uploaded ids are in the token video ids
+            let valid = true;
+            for (let i = 0; i < videoIds.length; i++) {
+              if (!tokenContent.videoIds.includes(videoIds[i])) {
+                valid = false;
+                break;
+              }
+            }
+
+            if (!valid) {
+              throw new Error('Invalid token');
+            }
+
+            console.log('Post submitted successfully');
+          }).catch(error => {
+            console.error('Error submitting post:', error);
+            setError(error.message);
           });
+
+
         }
       }, 1000);
     } catch (error) {
