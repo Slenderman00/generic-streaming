@@ -7,3 +7,5 @@ docker run \
     --network host \
     jlesage/firefox
 docker rm firefox
+
+# Notes: Remember to disable IPv6 and browser fixup suffix and prefix

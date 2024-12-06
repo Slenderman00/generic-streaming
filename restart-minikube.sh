@@ -3,7 +3,7 @@ minikube start \
   --network-plugin=cni \
   --extra-config=kubeadm.pod-network-cidr=10.244.0.0/16 \
   --extra-config=apiserver.service-node-port-range=53-32767 \
-  --cpus=16 \
+  --cpus=4 \
   --memory=8192 \
   --disk-size=30g
 sudo ip route add 10.244.0.0/16 via $(minikube ip)
