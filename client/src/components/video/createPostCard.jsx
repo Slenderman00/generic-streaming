@@ -19,6 +19,7 @@ import {
   Clock
 } from 'lucide-react';
 import { auth } from '../../frameworks/auth';
+import UserAvatar from '../user/avatar.jsx';
 
 const SUPPORTED_FORMATS = [
   'video/mp4',     // .mp4
@@ -367,9 +368,7 @@ const CreatePostCard = () => {
     <Card className="mb-6 overflow-hidden bg-white border border-gray-200">
       <div className="p-4">
         <div className="flex items-start space-x-3">
-          <div className="w-12 h-12 rounded-full border-2 border-purple-500 bg-purple-100 flex items-center justify-center">
-            <span className="text-xl font-bold text-purple-500">U</span>
-          </div>
+          <UserAvatar size='lg'/>
           <div className="flex-1">
             <textarea
               placeholder="Share your thoughts..."

@@ -62,6 +62,38 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+app.post('/auth/renew', authenticateToken, async (req, res) => {
+    try {
+        // Check if user still exists and is not banned
+        const result = await pool.query(
+            'SELECT * FROM users WHERE id = $1',
+            [req.user.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: 'ERROR',
+                error: 'User not found'
+            });
+        }
+
+        const user = result.rows[0];
+
+        // Generate new token
+        const tokenData = generateToken(user.id, user.email, user.username);
+        
+        res.json({
+            status: 'SUCCESS',
+            ...tokenData
+        });
+    } catch (error) {
+        console.error('Token renewal error:', error);
+        res.status(500).json({
+            status: 'ERROR',
+            error: 'Token renewal failed'
+        });
+    }
+});
 
 app.get('/auth/health', (req, res) => {
     pool.query('SELECT 1')
