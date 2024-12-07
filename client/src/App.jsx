@@ -8,10 +8,9 @@ import { auth } from './frameworks/auth.js'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/home.jsx'
 import SettingsPage from './pages/settings.jsx'
+import ServiceHealthMonitor from './components/health.jsx'
 
 function App() {
-
-
   useEffect(() => {
     const currentPath = window.location.pathname;
     if (!!auth.isAuthenticated()) {
@@ -27,6 +26,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ServiceHealthMonitor />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
