@@ -7,6 +7,7 @@ import RegisterPage from './pages/register.jsx'
 import { auth } from './frameworks/auth.js'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/home.jsx'
+import SettingsPage from './pages/settings.jsx'
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/" element={<HomePage /> } />
       </Routes>
     </BrowserRouter>

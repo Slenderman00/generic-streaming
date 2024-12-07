@@ -8,45 +8,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// prisma/schema.prisma
-model Video {
-  id              String            @id
-  userId          String
-  filename        String
-  status          String            // PENDING, PROCESSING, COMPLETED, FAILED
-  storagePath     String
-  originalWidth   Int?
-  originalHeight  Int?
-  originalBitrate Int?
-  duration        Float?
-  fps             Float?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  encodings       EncodedVideo[]
-  progress        EncodingProgress[]
-}
-
-model EncodedVideo {
-  id         String   @id @default(uuid())
-  videoId    String
-  resolution String   // 2160p, 1080p, etc.
-  filepath   String
-  filesize   Int
-  width      Int
-  height     Int
-  bitrate    Int
-  createdAt  DateTime @default(now())
-  video      Video    @relation(fields: [videoId], references: [id])
-
-  @@unique([videoId, resolution])
-}
-
-model EncodingProgress {
-  videoId    String
-  resolution String   // 2160p, 1080p, etc.
-  progress   Int      // 0-100
-  updatedAt  DateTime @updatedAt
-  video      Video    @relation(fields: [videoId], references: [id])
-
-  @@id([videoId, resolution])
+model User {
+  id          String   @id // Using the ID from the token
+  imageId     String?  // UUID of the profile image
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

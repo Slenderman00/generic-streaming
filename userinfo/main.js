@@ -8,14 +8,13 @@ dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET'],
+  methods: ['GET', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Authorization'],
   credentials: true
 }));
 
@@ -36,223 +35,200 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-const generateToken = (userId, email, username, videoIds, existingExp) => {
-  const now = Math.floor(Date.now() / 1000);
-  // Use the existing token's expiration time instead of creating a new one
-  const exp = existingExp;
-
-  const token = jwt.sign(
-      { userId, email, username, videoIds, iat: now, exp },
-      process.env.JWT_SECRET
-  );
-
-  return {
-      token,
-      issued: new Date(now * 1000).toISOString(),
-      expires: new Date(exp * 1000).toISOString()
-  };
-};
-
-// Updated append-videos endpoint
-app.get('/append-videos', verifyToken, async (req, res) => {
+// Get authenticated user's profile (private endpoint)
+app.get('/profile', verifyToken, async (req, res) => {
   try {
-      const videos = await prisma.video.findMany({
-          where: {
-              userId: req.user.userId
-          },
-          select: {
-              id: true
-          }
-      });
+    const profile = await prisma.user.findUnique({
+      where: {
+        id: req.user.userId
+      },
+      select: {
+        id: true,
+        imageId: true,
+        description: true,
+        updatedAt: true
+      }
+    });
 
-      const videoIds = videos.map(video => video.id);
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
 
-      // Generate token using the expiration time from the current token
-      const tokenData = generateToken(
-          req.user.userId,
-          req.user.email,
-          req.user.username,
-          videoIds,
-          req.user.exp // Use the expiration from the verified token
-      );
-
-      // Set the new token in the Authorization header
-      res.set('Authorization', `Bearer ${tokenData.token}`);
-
-      res.json({
-          status: 'SUCCESS',
-          ...tokenData,
-          videoCount: videoIds.length
-      });
+    res.json({
+      status: 'SUCCESS',
+      profile
+    });
   } catch (error) {
-      console.error('Error appending videos to token:', error);
-      res.status(500).json({ 
-          status: 'ERROR',
-          error: 'Failed to append videos to token' 
-      });
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ 
+      status: 'ERROR',
+      error: 'Failed to fetch profile' 
+    });
   }
 });
 
-// Get all videos for a user with detailed status
-app.get('/videos', verifyToken, async (req, res) => {
+
+app.put('/profile', verifyToken, async (req, res) => {
+  const { imageId, description } = req.body;
+
+  // Validate input
+  if (imageId && !isValidUUID(imageId)) {
+    return res.status(400).json({ 
+      status: 'ERROR',
+      error: 'Invalid image ID format' 
+    });
+  }
+
+  if (description && description.length > 1000) {
+    return res.status(400).json({ 
+      status: 'ERROR',
+      error: 'Description must be 1000 characters or less' 
+    });
+  }
+
   try {
-    const videos = await prisma.video.findMany({
+    const updatedProfile = await prisma.user.upsert({
       where: {
-        userId: req.user.userId
+        id: req.user.userId
       },
-      include: {
-        encodings: {
-          select: {
-            resolution: true,
-            filesize: true,
-            width: true,
-            height: true,
-            bitrate: true,
-            createdAt: true
-          }
-        },
-        progress: {
-          select: {
-            resolution: true,
-            progress: true,
-            updatedAt: true
-          }
+      create: {
+        id: req.user.userId,
+        ...(imageId && { imageId }),
+        description: description || ''
+      },
+      update: {
+        ...(imageId && { imageId }),
+        ...(description !== undefined && { description })
+      },
+      select: {
+        id: true,
+        imageId: true,
+        description: true,
+        updatedAt: true
+      }
+    });
+
+    res.json({
+      status: 'SUCCESS',
+      profile: updatedProfile
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ 
+      status: 'ERROR',
+      error: 'Failed to update profile' 
+    });
+  }
+});
+
+// Get public profile by user ID (public endpoint - no auth required)
+app.get('/profiles/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  // Validate UUID format
+  if (!isValidUUID(userId)) {
+    return res.status(400).json({ 
+      status: 'ERROR',
+      error: 'Invalid user ID format' 
+    });
+  }
+
+  try {
+    const profile = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        id: true,
+        imageId: true,
+        description: true,
+        updatedAt: true
+      }
+    });
+
+    if (!profile) {
+      return res.status(404).json({ 
+        status: 'ERROR',
+        error: 'Profile not found' 
+      });
+    }
+
+    // Rate limiting headers
+    res.set({
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '99', // This should be implemented with a proper rate limiter
+      'Cache-Control': 'public, max-age=60' // Cache public profiles for 60 seconds
+    });
+
+    res.json({
+      status: 'SUCCESS',
+      profile
+    });
+  } catch (error) {
+    console.error('Error fetching public profile:', error);
+    res.status(500).json({ 
+      status: 'ERROR',
+      error: 'Failed to fetch profile' 
+    });
+  }
+});
+
+// Batch fetch public profiles (public endpoint - no auth required)
+app.get('/profiles/batch', async (req, res) => {
+  const userIds = req.query.ids?.split(',') || [];
+
+  // Validate input
+  if (!userIds.length || userIds.length > 100) {
+    return res.status(400).json({ 
+      status: 'ERROR',
+      error: 'Please provide between 1 and 100 user IDs' 
+    });
+  }
+
+  // Validate all UUIDs
+  if (!userIds.every(isValidUUID)) {
+    return res.status(400).json({ 
+      status: 'ERROR',
+      error: 'Invalid user ID format' 
+    });
+  }
+
+  try {
+    const profiles = await prisma.user.findMany({
+      where: {
+        id: {
+          in: userIds
         }
       },
-      orderBy: {
-        createdAt: 'desc'
+      select: {
+        id: true,
+        imageId: true,
+        description: true,
+        updatedAt: true
       }
     });
 
-    const transformedVideos = videos.map(video => ({
-      id: video.id,
-      filename: video.filename,
-      status: video.status,
-      createdAt: video.createdAt,
-      duration: video.duration,
-      originalQuality: {
-        width: video.originalWidth,
-        height: video.originalHeight,
-        bitrate: video.originalBitrate,
-        fps: video.fps
-      },
-      encodings: video.encodings.map(encoding => ({
-        resolution: encoding.resolution,
-        width: encoding.width,
-        height: encoding.height,
-        filesize: encoding.filesize,
-        bitrate: encoding.bitrate,
-        createdAt: encoding.createdAt
-      })),
-      progress: video.progress.reduce((acc, curr) => {
-        acc[curr.resolution] = {
-          progress: curr.progress,
-          updatedAt: curr.updatedAt
-        };
-        return acc;
-      }, {})
-    }));
-
-    res.json(transformedVideos);
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    res.status(500).json({ error: 'Failed to fetch videos' });
-  }
-});
-
-// Get detailed status for a specific video
-app.get('/videos/:videoId', verifyToken, async (req, res) => {
-  try {
-    const video = await prisma.video.findFirst({
-      where: {
-        id: req.params.videoId,
-        userId: req.user.userId
-      },
-      include: {
-        encodings: true,
-        progress: true
-      }
+    res.set({
+      'Cache-Control': 'public, max-age=60'
     });
 
-    if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
-    }
-
-    const overallProgress = video.status === 'COMPLETED' 
-      ? 100 
-      : video.progress.reduce((acc, curr) => acc + curr.progress, 0) / video.progress.length || 0;
-
-    const response = {
-      id: video.id,
-      filename: video.filename,
-      status: video.status,
-      createdAt: video.createdAt,
-      duration: video.duration,
-      originalQuality: {
-        width: video.originalWidth,
-        height: video.originalHeight,
-        bitrate: video.originalBitrate,
-        fps: video.fps
-      },
-      encodings: video.encodings.map(encoding => ({
-        resolution: encoding.resolution,
-        width: encoding.width,
-        height: encoding.height,
-        filesize: encoding.filesize,
-        bitrate: encoding.bitrate,
-        createdAt: encoding.createdAt
-      })),
-      progress: {
-        overall: Math.round(overallProgress),
-        byResolution: video.progress.reduce((acc, curr) => {
-          acc[curr.resolution] = {
-            progress: curr.progress,
-            updatedAt: curr.updatedAt
-          };
-          return acc;
-        }, {})
-      },
-      estimatedTimeRemaining: calculateEstimatedTimeRemaining(video.progress)
-    };
-
-    res.json(response);
+    res.json({
+      status: 'SUCCESS',
+      profiles
+    });
   } catch (error) {
-    console.error('Error fetching video:', error);
-    res.status(500).json({ error: 'Failed to fetch video details' });
+    console.error('Error fetching batch profiles:', error);
+    res.status(500).json({ 
+      status: 'ERROR',
+      error: 'Failed to fetch profiles' 
+    });
   }
 });
 
-// Helper function to calculate estimated time remaining
-function calculateEstimatedTimeRemaining(progressHistory) {
-  if (!progressHistory.length) return null;
-  
-  const sortedUpdates = progressHistory.sort((a, b) => b.updatedAt - a.updatedAt);
-  const latestUpdate = sortedUpdates[0];
-  
-  if (latestUpdate.progress >= 100) return 0;
-  if (sortedUpdates.length < 2) return null;
-
-  const recentUpdates = sortedUpdates.slice(0, 5);
-  let totalProgressRate = 0;
-  let validRates = 0;
-
-  for (let i = 0; i < recentUpdates.length - 1; i++) {
-    const timeDiff = recentUpdates[i].updatedAt - recentUpdates[i + 1].updatedAt;
-    const progressDiff = recentUpdates[i].progress - recentUpdates[i + 1].progress;
-    
-    if (timeDiff > 0 && progressDiff > 0) {
-      totalProgressRate += (progressDiff / timeDiff);
-      validRates++;
-    }
-  }
-
-  if (validRates === 0) return null;
-
-  const averageProgressRate = totalProgressRate / validRates;
-  const remainingProgress = 100 - latestUpdate.progress;
-  const estimatedSeconds = remainingProgress / averageProgressRate;
-
-  return Math.round(estimatedSeconds);
+// UUID validation helper
+function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
 }
 
 // Health check endpoint
@@ -262,5 +238,5 @@ app.get('/health', (req, res) => {
 
 // Start server
 app.listen(port, () => {
-  console.log(`Video status service listening on port ${port}`);
+  console.log(`Profile service listening on port ${port}`);
 });

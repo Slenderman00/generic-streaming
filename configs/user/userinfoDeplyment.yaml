@@ -28,7 +28,7 @@ spec:
             - name: PORT
               value: "80"
             - name: POSTGRES_HOST
-              value: "$VIDEO_POSTGRES_HOST"
+              value: "$USER_POSTGRES_HOST"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -40,9 +40,9 @@ spec:
                   name: user-secrets
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
-              value: "$VIDEO_POSTGRES_DB"
+              value: "$USER_POSTGRES_DB"
             - name: POSTGRES_PORT
-              value: "$VIDEO_POSTGRES_PORT"
+              value: "$USER_POSTGRES_PORT"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -53,7 +53,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: user-info-service
-  namespace: video
+  namespace: user
 spec:
   type: ClusterIP
   ports:

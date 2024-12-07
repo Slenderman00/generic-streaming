@@ -42,8 +42,8 @@ const CreatePostCard = () => {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  const video_upload_url = import.meta.env.VITE_UPLOAD_URL;
-  const video_status_url = import.meta.env.VITE_VIDEO_STATUS_URL;
+  const VIDEO_UPLOAD_URL = import.meta.env.VITE_UPLOAD_URL;
+  const VIDEO_STATUS_URL = import.meta.env.VITE_VIDEO_STATUS_URL;
 
   const validateFile = (file) => {
     if (!file) return { valid: false, error: 'No file selected' };
@@ -108,7 +108,7 @@ const CreatePostCard = () => {
         return newVideos;
       });
 
-      const response = await auth.doRequest(`${video_upload_url}/upload`, {
+      const response = await auth.doRequest(`${VIDEO_UPLOAD_URL}/upload`, {
         method: 'POST',
         body: formData,
         onUploadProgress: (progressEvent) => {
@@ -154,7 +154,7 @@ const CreatePostCard = () => {
   const pollProcessingStatus = async (videoId, index) => {
     const poll = async () => {
       try {
-        const response = await auth.doRequest(`${video_status_url}/videos/${videoId}`);
+        const response = await auth.doRequest(`${VIDEO_STATUS_URL}/videos/${videoId}`);
         const data = await response.json();
 
         if (data.status === 'COMPLETED') {
@@ -231,7 +231,7 @@ const CreatePostCard = () => {
             .map(v => v.id);
           
           // submit post
-          auth.doRequest(`${video_status_url}/append-videos`).then(response => {
+          auth.doRequest(`${VIDEO_STATUS_URL}/append-videos`).then(response => {
             if (!response.ok) {
               throw new Error('Failed to submit post');
             }
