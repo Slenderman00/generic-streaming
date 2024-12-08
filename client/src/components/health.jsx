@@ -47,7 +47,7 @@ const ServiceHealthMonitor = () => {
     checkHealth();
     
     // Set up polling every 30 seconds
-    const interval = setInterval(checkHealth, 30000);
+    const interval = setInterval(checkHealth, 5000);
     
     return () => clearInterval(interval);
   }, []);

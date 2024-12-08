@@ -28,14 +28,14 @@ spec:
           cd /app
           cp -r /tmp/node_modules .
           npm install -g vite
-          vite --host --force
+          vite --port 80 --host --force
       volumeMounts:
         - name: app-source
           mountPath: /app
         - name: node-modules
           mountPath: /app/node_modules
       ports:
-        - containerPort: 5173
+        - containerPort: 80
   volumes:
     - name: app-source
       hostPath:
