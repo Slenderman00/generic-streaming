@@ -160,13 +160,11 @@ app.get('/videos', verifyToken, async (req, res) => {
   }
 });
 
-// Get detailed status for a specific video
 app.get('/videos/:videoId', verifyToken, async (req, res) => {
   try {
     const video = await prisma.video.findFirst({
       where: {
         id: req.params.videoId,
-        userId: req.user.userId
       },
       include: {
         encodings: true,

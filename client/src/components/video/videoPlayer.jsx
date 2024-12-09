@@ -137,28 +137,26 @@ const VideoPlayer = ({ videoId }) => {
 
   if (!videoData || !currentResolution) {
     return (
-      <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+      <div className="w-full h-64 flex items-center justify-center bg-transparent rounded-lg">
         <span className="text-gray-500">Loading video...</span>
       </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-4xl">
+    <Card className="w-full bg-transparent border-0">
       <CardContent className="p-0">
-        <div ref={containerRef} className="relative group w-full h-full">
+        <div ref={containerRef} className="relative group w-full h-full bg-transparent">
           <video
             ref={videoRef}
-            className="w-full h-full rounded-t-lg cursor-pointer"
+            className="w-full h-full rounded-t-lg cursor-pointer bg-transparent"
             src={`${VITE_VIDEO_STREAM_URL}/${videoId}/${currentResolution.resolution}.mp4`}
             onClick={togglePlay}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
           />
           
-          {/* Custom Controls */}
           <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            {/* Progress Bar */}
             <input
               type="range"
               className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
@@ -168,7 +166,6 @@ const VideoPlayer = ({ videoId }) => {
             
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center space-x-4">
-                {/* Play/Pause */}
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -178,7 +175,6 @@ const VideoPlayer = ({ videoId }) => {
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
 
-                {/* Volume Control */}
                 <div className="flex items-center space-x-2">
                   <Button 
                     variant="ghost" 
@@ -199,14 +195,12 @@ const VideoPlayer = ({ videoId }) => {
                   />
                 </div>
 
-                {/* Time Display */}
                 <span className="text-white text-sm">
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2">
-                {/* Resolution Selector */}
                 {!isFullscreen && (
                   <Select
                     value={currentResolution.resolution}
@@ -236,7 +230,6 @@ const VideoPlayer = ({ videoId }) => {
                   </Select>
                 )}
 
-                {/* Info Button */}
                 {!isFullscreen && (
                   <Sheet>
                     <SheetTrigger asChild>
@@ -275,7 +268,6 @@ const VideoPlayer = ({ videoId }) => {
                   </Sheet>
                 )}
 
-                {/* Fullscreen Button */}
                 <Button 
                   variant="ghost" 
                   size="icon" 

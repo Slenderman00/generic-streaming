@@ -5,7 +5,8 @@ import { auth } from '../../frameworks/auth';
 const UserAvatar = ({ 
   size = 'md',  // sm, md, lg
   showLoading = true,
-  className = '' 
+  className = '',
+  userId = '',
 }) => {
   const user = auth.getUser();
   const [imageUrl, setImageUrl] = useState(null);
@@ -39,8 +40,14 @@ const UserAvatar = ({
         return;
       }
 
+      let profileResponse;
+
       try {
-        const profileResponse = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profile`);
+        if (!userId) {
+          profileResponse = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profile`);
+        } else {
+          profileResponse = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profiles/${userId}`);
+        }
         if (!profileResponse.ok) {
           throw new Error('Failed to fetch profile');
         }

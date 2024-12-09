@@ -194,6 +194,15 @@ const CreatePostCard = () => {
     }
   };
 
+  const uploadAllVideos = async () => {
+    const pendingUploads = videos
+      .map((video, index) => ({ video, index }))
+      .filter(({ video }) => video.status === 'idle')
+      .map(({ video, index }) => uploadVideo(video, index));
+
+    return Promise.all(pendingUploads);
+  };
+
   const createPost = async (content, videoIds) => {
     const response = await auth.doRequest(`${POSTS_API_URL}/posts`, {
       method: 'POST',
@@ -216,14 +225,8 @@ const CreatePostCard = () => {
       setIsSubmitting(true);
       setError(null);
 
-      // Upload any pending videos
-      const pendingUploads = videos
-        .map((video, index) => ({ video, index }))
-        .filter(({ video }) => video.status === 'idle');
-
-      for (const { video, index } of pendingUploads) {
-        await uploadVideo(video, index);
-      }
+      // Upload all pending videos concurrently
+      await uploadAllVideos();
 
       // Validate video ownership
       const appendResponse = await auth.doRequest(`${VIDEO_STATUS_URL}/append-videos`);

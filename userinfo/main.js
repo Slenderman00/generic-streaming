@@ -121,11 +121,10 @@ app.put('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Get public profile by user ID (public endpoint - no auth required)
-app.get('/profiles/:userId', async (req, res) => {
+// Get public profile by user ID
+app.get('/profiles/:userId', verifyToken, async (req, res) => {
   const { userId } = req.params;
 
-  // Validate UUID format
   if (!isValidUUID(userId)) {
     return res.status(400).json({ 
       status: 'ERROR',
