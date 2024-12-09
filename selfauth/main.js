@@ -62,6 +62,64 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// endpoint to get username by user ID
+app.get('/auth/user/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Debug logging
+        console.log('=== DEBUG: /auth/user/:userId ===');
+        console.log('Requested User ID:', userId);
+        console.log('Request User Object:', req.user);
+        
+        // Log all users in the database
+        const allUsers = await pool.query('SELECT id, email, username FROM users');
+        console.log('All Users in Database:', allUsers.rows);
+
+        // Validate UUID format
+        if (!userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+            console.log('DEBUG: Invalid UUID format');
+            return res.status(400).json({
+                status: 'ERROR',
+                error: 'Invalid user ID format'
+            });
+        }
+
+        // Log the exact query being executed
+        console.log('Executing query with userId:', userId);
+        const result = await pool.query(
+            'SELECT username FROM users WHERE id = $1',
+            [userId]
+        );
+        console.log('Query result:', result.rows);
+
+        if (result.rows.length === 0) {
+            console.log('DEBUG: No user found with ID:', userId);
+            return res.status(404).json({
+                status: 'ERROR',
+                error: 'User not found'
+            });
+        }
+
+        console.log('DEBUG: User found:', result.rows[0]);
+        res.json({
+            status: 'SUCCESS',
+            username: result.rows[0].username
+        });
+    } catch (error) {
+        console.error('Get username error:', error);
+        console.log('DEBUG: Full error object:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
+        res.status(500).json({
+            status: 'ERROR',
+            error: 'Failed to retrieve username'
+        });
+    }
+});
+
 app.post('/auth/renew', authenticateToken, async (req, res) => {
     try {
         // Check if user still exists and is not banned

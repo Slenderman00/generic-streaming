@@ -13,26 +13,41 @@ const ServiceHealthMonitor = () => {
     'Video Upload Service': import.meta.env.VITE_UPLOAD_URL,
     'Video Status': import.meta.env.VITE_VIDEO_STATUS_URL,
     'User Settings': import.meta.env.VITE_USER_SETTINGS_URL,
-    'Image Service': import.meta.env.VITE_IMAGE_SERVICE_URL
+    'Image Service': import.meta.env.VITE_IMAGE_SERVICE_URL,
+    'Post Service': import.meta.env.VITE_POST_SERVICE_URL
+  };
+
+  const checkServiceHealth = async (name, baseUrl) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    try {
+      const response = await fetch(`${baseUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return response.ok;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      return false;
+    }
   };
 
   const checkHealth = async () => {
     setIsLoading(true);
     const newStatus = {};
     
-    for (const [name, baseUrl] of Object.entries(services)) {
-      try {
-        const response = await fetch(`${baseUrl}/health`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        newStatus[name] = response.ok;
-      } catch (error) {
-        newStatus[name] = false;
-      }
-    }
+    // Check all services concurrently
+    const checks = Object.entries(services).map(async ([name, baseUrl]) => {
+      const status = await checkServiceHealth(name, baseUrl);
+      newStatus[name] = status;
+    });
+
+    await Promise.all(checks);
     
     setHealthStatus(newStatus);
     setIsLoading(false);
@@ -46,9 +61,8 @@ const ServiceHealthMonitor = () => {
     // Initial check
     checkHealth();
     
-    // Set up polling every 30 seconds
-    const interval = setInterval(checkHealth, 5000);
-    
+    // Set up polling every 15 seconds
+    const interval = setInterval(checkHealth, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -65,7 +79,6 @@ const ServiceHealthMonitor = () => {
             />
           </AlertDialogTitle>
         </AlertDialogHeader>
-        
         <div className="space-y-2">
           {Object.entries(healthStatus).map(([service, isHealthy]) => (
             <Alert key={service} variant={isHealthy ? "default" : "destructive"}>

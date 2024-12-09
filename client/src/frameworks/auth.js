@@ -298,6 +298,22 @@ class AuthFramework {
         return response;
     }
 
+    async fetchUsername(userId) {
+        try {
+            const response = await this.doRequest(`${this.baseUrl}/auth/user/${userId}`);
+            const data = await response.json();
+
+            if (data.status === 'SUCCESS') {
+                return data.username;
+            }
+
+            throw new Error(data.error || 'Failed to fetch username');
+        } catch (error) {
+            console.error('Error fetching username:', error);
+            throw error;
+        }
+    }
+
     async doRequest(url, options = {}) {
         if (!this.isAuthenticated()) {
             throw new Error('Not authenticated');

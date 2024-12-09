@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-service
-  namespace: auth-service
+  name: post-service
+  namespace: post-service
   labels:
-    app: auth-service
-    dns.peak/domain: self.auth.peak
-    dns.peak/loadbalance: configmap.loadbalance-expressions.auth-service
+    app: post-service
+    dns.peak/domain: post.service.peak
+    dns.peak/loadbalance: configmap.loadbalance-expressions.post-service
     dns.peak/loadbalance-mode: excludeoverloaded
     dns.peak/overload-threshold: "1.5"
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: auth-service
+      app: post-service
   template:
     metadata:
       labels:
-        app: auth-service
+        app: post-service
     spec:
       containers:
-        - name: auth-service
-          image: localhost:5000/selfauth:latest
+        - name: post-service
+          image: localhost:5000/post:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 80
@@ -31,33 +31,33 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: auth-secrets
+                  name: post-secrets
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: auth-secrets
+                  name: post-secrets
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_HOST
-              value: "$AUTH_POSTGRES_HOST"
+              value: "$POST_POSTGRES_HOST"
             - name: POSTGRES_DB
-              value: "$AUTH_POSTGRES_DB"
+              value: "$POST_POSTGRES_DB"
             - name: POSTGRES_PORT
-              value: "$AUTH_POSTGRES_PORT"
+              value: "$POST_POSTGRES_PORT"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: auth-secrets
+                  name: post-secrets
                   key: JWT_SECRET
           readinessProbe:
             httpGet:
-              path: /auth/health
+              path: /health
               port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /auth/health
+              path: /health
               port: 80
             initialDelaySeconds: 15
             periodSeconds: 20
@@ -65,11 +65,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-service
-  namespace: auth-service
+  name: post-service
+  namespace: post-service
 spec:
   ports:
     - port: 80
       targetPort: 80
   selector:
-    app: auth-service
+    app: post-service
