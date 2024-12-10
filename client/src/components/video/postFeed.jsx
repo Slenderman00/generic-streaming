@@ -12,14 +12,15 @@ const PostFeed = () => {
   const observerRef = useRef();
   const lastPostRef = useRef();
 
-  const POSTS_API_URL = import.meta.env.VITE_POST_SERVICE_URL;
+  const POST_READ_URL = import.meta.env.VITE_POST_READ_SERVICE_URL;
+  const POST_WRITE_URL = import.meta.env.VITE_POST_WRITE_SERVICE_URL;
 
   const fetchPosts = async (pageNum) => {
     if (loading || !hasMore) return;
 
     setLoading(true);
     try {
-      const response = await auth.doRequest(`${POSTS_API_URL}/posts?page=${pageNum}&limit=10`);
+      const response = await auth.doRequest(`${POST_READ_URL}/posts?page=${pageNum}&limit=10`);
       const data = await response.json();
 
       if (data.status === 'SUCCESS') {
@@ -38,7 +39,7 @@ const PostFeed = () => {
 
   const handleDelete = async (postId) => {
     try {
-      const response = await auth.doRequest(`${POSTS_API_URL}/posts/${postId}`, {
+      const response = await auth.doRequest(`${POST_WRITE_URL}/posts/${postId}`, {
         method: 'DELETE'
       });
 
@@ -54,7 +55,7 @@ const PostFeed = () => {
 
   const handleLike = async (postId) => {
     try {
-      const response = await auth.doRequest(`${POSTS_API_URL}/posts/${postId}/like`, {
+      const response = await auth.doRequest(`${POST_READ_URL}/posts/${postId}/like`, {
         method: 'POST'
       });
 

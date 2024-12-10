@@ -14,7 +14,8 @@ const ServiceHealthMonitor = () => {
     'Video Status': import.meta.env.VITE_VIDEO_STATUS_URL,
     'User Settings': import.meta.env.VITE_USER_SETTINGS_URL,
     'Image Service': import.meta.env.VITE_IMAGE_SERVICE_URL,
-    'Post Service': import.meta.env.VITE_POST_SERVICE_URL
+    'Post Read Service': import.meta.env.VITE_POST_READ_SERVICE_URL,
+    'Post Write Service': import.meta.env.VITE_POST_WRITE_SERVICE_URL,
   };
 
   const checkServiceHealth = async (name, baseUrl) => {

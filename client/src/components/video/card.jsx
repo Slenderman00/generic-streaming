@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import VideoPlayer from './videoPlayer';
 import { Card } from '@/components/ui/card';
 import UserAvatar from '@/components/user/avatar';
-import { ChevronLeft, ChevronRight, Trash2, MoreHorizontal, Heart, Clock } from 'lucide-react';
+import { Trash2, MoreHorizontal, Heart, Clock } from 'lucide-react';
 import { auth } from '@/frameworks/auth';
+import VideoCarousel from './videoCarousel';
 
 const formatRelativeTime = (dateString) => {
   const date = new Date(dateString);
@@ -18,55 +18,6 @@ const formatRelativeTime = (dateString) => {
   return `${diffInMonths} months ago`;
 };
 
-const VideoCarousel = ({ videoIds }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? videoIds.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === videoIds.length - 1 ? 0 : prev + 1));
-  };
-
-  if (!videoIds || videoIds.length === 0) return null;
-
-  return (
-    <div className="relative">
-      <div className="relative aspect-video w-full bg-black rounded-lg overflow-hidden">
-        <VideoPlayer videoId={videoIds[currentIndex]} />
-      </div>
-
-      {videoIds.length > 1 && (
-        <>
-          <button
-            onClick={handlePrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/50 text-white hover:text-black hover:bg-white/90 transition-colors"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button
-            onClick={handleNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/50 text-white hover:text-black hover:bg-white/90 transition-colors"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
-            {videoIds.map((_, index) => (
-              <div
-                role="button"
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${index === currentIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
 
 const OwnerActions = ({ post, onDelete }) => {
   if (post.userId !== auth.getUser().id) {

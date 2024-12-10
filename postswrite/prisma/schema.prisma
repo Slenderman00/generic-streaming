@@ -1,0 +1,28 @@
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Post {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  content   String?
+  videoIds  String[]  @map("video_ids")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  likes     PostLike[]
+  @@map("posts")
+}
+
+model PostLike {
+  postId    String    @map("post_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  @@id([postId, userId])
+  @@map("post_likes") 
+}

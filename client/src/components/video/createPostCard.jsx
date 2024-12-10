@@ -39,8 +39,8 @@ const CreatePostCard = () => {
 
   const VIDEO_UPLOAD_URL = import.meta.env.VITE_UPLOAD_URL;
   const VIDEO_STATUS_URL = import.meta.env.VITE_VIDEO_STATUS_URL;
-  const POSTS_API_URL = import.meta.env.VITE_POST_SERVICE_URL;
-
+  const POST_WRITE_URL = import.meta.env.VITE_POST_WRITE_SERVICE_URL;
+ 
   const validateFile = (file) => {
     if (!file) return { valid: false, error: 'No file selected' };
     if (!SUPPORTED_FORMATS.includes(file.type)) {
@@ -204,7 +204,7 @@ const CreatePostCard = () => {
   };
 
   const createPost = async (content, videoIds) => {
-    const response = await auth.doRequest(`${POSTS_API_URL}/posts`, {
+    const response = await auth.doRequest(`${POST_WRITE_URL}/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, videoIds })

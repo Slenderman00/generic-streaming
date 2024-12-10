@@ -4,4 +4,4 @@
 eval $(minikube -p minikube docker-env)
 
 # Build directly with the right tag
-docker build -t localhost:5000/post:latest .
+docker build -t localhost:5000/postswrite:latest .

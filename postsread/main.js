@@ -8,12 +8,12 @@ dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3003;
 
 app.use(express.json());
 app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
-    methods: ['GET', 'POST', 'DELETE'],
+    methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
@@ -38,35 +38,7 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// Create post endpoint
-app.post('/posts', verifyToken, async (req, res) => {
-    const { content, videoIds = [] } = req.body;
-    const userId = req.user.userId;
-
-    try {
-        const post = await prisma.post.create({
-            data: {
-                userId,
-                content,
-                videoIds
-            }
-        });
-
-        res.status(201).json({
-            status: 'SUCCESS',
-            post
-        });
-    } catch (error) {
-        console.error('Create post error:', error);
-        res.status(500).json({
-            status: 'ERROR',
-            error: 'Failed to create post',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
-// Get posts endpoint
+// Get all posts endpoint
 app.get('/posts', verifyToken, async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -118,6 +90,70 @@ app.get('/posts', verifyToken, async (req, res) => {
         res.status(500).json({
             status: 'ERROR',
             error: 'Failed to fetch posts'
+        });
+    }
+});
+
+// Get posts by user ID endpoint
+app.get('/users/:userId/posts', verifyToken, async (req, res) => {
+    const { userId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    try {
+        const [posts, totalPosts] = await Promise.all([
+            prisma.post.findMany({
+                where: {
+                    userId
+                },
+                take: parseInt(limit),
+                skip,
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                include: {
+                    _count: {
+                        select: {
+                            likes: true
+                        }
+                    },
+                    likes: {
+                        where: {
+                            userId: req.user.userId
+                        },
+                        take: 1
+                    }
+                }
+            }),
+            prisma.post.count({
+                where: {
+                    userId
+                }
+            })
+        ]);
+
+        const transformedPosts = posts.map(post => ({
+            ...post,
+            likes_count: post._count.likes,
+            liked_by_user: post.likes.length > 0,
+            likes: undefined,
+            _count: undefined
+        }));
+
+        res.json({
+            status: 'SUCCESS',
+            posts: transformedPosts,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: totalPosts
+            }
+        });
+    } catch (error) {
+        console.error('Get user posts error:', error);
+        res.status(500).json({
+            status: 'ERROR',
+            error: 'Failed to fetch user posts'
         });
     }
 });
@@ -183,39 +219,6 @@ app.post('/posts/:postId/like', verifyToken, async (req, res) => {
     }
 });
 
-// Delete a post
-app.delete('/posts/:postId', verifyToken, async (req, res) => {
-    const { postId } = req.params;
-    const userId = req.user.userId;
-
-    try {
-        const post = await prisma.post.deleteMany({
-            where: {
-                id: postId,
-                userId
-            }
-        });
-
-        if (post.count === 0) {
-            return res.status(404).json({
-                status: 'ERROR',
-                error: 'Post not found or unauthorized'
-            });
-        }
-
-        res.json({
-            status: 'SUCCESS',
-            message: 'Post deleted successfully'
-        });
-    } catch (error) {
-        console.error('Delete post error:', error);
-        res.status(500).json({
-            status: 'ERROR',
-            error: 'Failed to delete post'
-        });
-    }
-});
-
 // Health check endpoint
 app.get('/health', async (req, res) => {
     try {
@@ -232,7 +235,6 @@ process.on('beforeExit', async () => {
     await prisma.$disconnect();
 });
 
-// Start server
 app.listen(port, () => {
-    console.log(`Posts service listening on port ${port}`);
+    console.log(`Posts Read service listening on port ${port}`);
 });

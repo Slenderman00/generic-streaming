@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { ProcessingLogger } from './utils/logger.js';
 import { VideoEncoder } from './services/encoder.js';
 import { getVideoMetadata, calculateOptimalResolutions } from './utils/video.js';
+import { generateThumbnail } from './utils/thumbnail.js';
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -68,6 +69,10 @@ async function processVideo(videoId, inputPath, userId) {
         userId
       }
     });
+
+    // Generate thumbnail
+    const thumbnailPath = path.join(outputDir, 'thumbnail.jpg');
+    await generateThumbnail(inputPath, thumbnailPath);
 
     // Process all resolutions in parallel
     const encodingPromises = resolutions.map(resolution => {

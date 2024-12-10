@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: post-service
+  name: post-service-read
   namespace: post-service
   labels:
-    app: post-service
-    dns.peak/domain: post.service.peak
+    app: post-service-read
+    dns.peak/domain: read.posts.peak
     dns.peak/loadbalance: configmap.loadbalance-expressions.post-service
     dns.peak/loadbalance-mode: excludeoverloaded
     dns.peak/overload-threshold: "1.5"
@@ -13,15 +13,15 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: post-service
+      app: post-service-read
   template:
     metadata:
       labels:
-        app: post-service
+        app: post-service-read
     spec:
       containers:
-        - name: post-service
-          image: localhost:5000/post:latest
+        - name: post-service-read
+          image: localhost:5000/postsread:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 80
@@ -65,11 +65,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: post-service
+  name: post-service-read
   namespace: post-service
 spec:
   ports:
     - port: 80
       targetPort: 80
   selector:
-    app: post-service
+    app: post-service-read
