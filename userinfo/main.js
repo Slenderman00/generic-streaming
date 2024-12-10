@@ -45,6 +45,7 @@ app.get('/profile', verifyToken, async (req, res) => {
       select: {
         id: true,
         imageId: true,
+        bannerId: true,
         description: true,
         updatedAt: true
       }
@@ -67,12 +68,11 @@ app.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-
 app.put('/profile', verifyToken, async (req, res) => {
-  const { imageId, description } = req.body;
+  const { imageId, bannerId, description } = req.body;
 
   // Validate input
-  if (imageId && !isValidUUID(imageId)) {
+  if ((imageId && !isValidUUID(imageId)) || (bannerId && !isValidUUID(bannerId))) {
     return res.status(400).json({ 
       status: 'ERROR',
       error: 'Invalid image ID format' 
@@ -94,15 +94,18 @@ app.put('/profile', verifyToken, async (req, res) => {
       create: {
         id: req.user.userId,
         ...(imageId && { imageId }),
+        ...(bannerId && { bannerId }),
         description: description || ''
       },
       update: {
         ...(imageId && { imageId }),
+        ...(bannerId && { bannerId }),
         ...(description !== undefined && { description })
       },
       select: {
         id: true,
         imageId: true,
+        bannerId: true,
         description: true,
         updatedAt: true
       }
@@ -121,7 +124,6 @@ app.put('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Get public profile by user ID
 app.get('/profiles/:userId', verifyToken, async (req, res) => {
   const { userId } = req.params;
 
@@ -140,6 +142,7 @@ app.get('/profiles/:userId', verifyToken, async (req, res) => {
       select: {
         id: true,
         imageId: true,
+        bannerId: true,
         description: true,
         updatedAt: true
       }
@@ -155,8 +158,8 @@ app.get('/profiles/:userId', verifyToken, async (req, res) => {
     // Rate limiting headers
     res.set({
       'X-RateLimit-Limit': '100',
-      'X-RateLimit-Remaining': '99', // This should be implemented with a proper rate limiter
-      'Cache-Control': 'public, max-age=60' // Cache public profiles for 60 seconds
+      'X-RateLimit-Remaining': '99',
+      'Cache-Control': 'public, max-age=60'
     });
 
     res.json({
@@ -172,70 +175,15 @@ app.get('/profiles/:userId', verifyToken, async (req, res) => {
   }
 });
 
-// Batch fetch public profiles (public endpoint - no auth required)
-app.get('/profiles/batch', async (req, res) => {
-  const userIds = req.query.ids?.split(',') || [];
-
-  // Validate input
-  if (!userIds.length || userIds.length > 100) {
-    return res.status(400).json({ 
-      status: 'ERROR',
-      error: 'Please provide between 1 and 100 user IDs' 
-    });
-  }
-
-  // Validate all UUIDs
-  if (!userIds.every(isValidUUID)) {
-    return res.status(400).json({ 
-      status: 'ERROR',
-      error: 'Invalid user ID format' 
-    });
-  }
-
-  try {
-    const profiles = await prisma.user.findMany({
-      where: {
-        id: {
-          in: userIds
-        }
-      },
-      select: {
-        id: true,
-        imageId: true,
-        description: true,
-        updatedAt: true
-      }
-    });
-
-    res.set({
-      'Cache-Control': 'public, max-age=60'
-    });
-
-    res.json({
-      status: 'SUCCESS',
-      profiles
-    });
-  } catch (error) {
-    console.error('Error fetching batch profiles:', error);
-    res.status(500).json({ 
-      status: 'ERROR',
-      error: 'Failed to fetch profiles' 
-    });
-  }
-});
-
-// UUID validation helper
 function isValidUUID(uuid) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
 
-// Start server
 app.listen(port, () => {
   console.log(`Profile service listening on port ${port}`);
 });

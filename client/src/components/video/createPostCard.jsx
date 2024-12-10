@@ -344,7 +344,7 @@ const CreatePostCard = () => {
     <Card className="mb-6 overflow-hidden bg-white border border-gray-200">
       <div className="p-4">
         <div className="flex items-start space-x-3">
-          <UserAvatar size="lg" />
+          <UserAvatar size="md" />
           <div className="flex-1">
             <textarea
               placeholder="Share your thoughts..."

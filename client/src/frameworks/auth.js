@@ -313,31 +313,33 @@ class AuthFramework {
             throw error;
         }
     }
-
     async doRequest(url, options = {}) {
         if (!this.isAuthenticated()) {
-            throw new Error('Not authenticated');
+          throw new Error('Not authenticated');
         }
-
+      
+        options.headers = options.headers || {};
+        
+        const timestampedUrl = new URL(url);
+        timestampedUrl.searchParams.set('_t', Date.now());
+      
         try {
-            // If token renewal is in progress, queue the request
-            if (this.isRefreshing) {
-                return await this.addToQueue({ url, ...options });
-            }
-
-            // Check if token needs renewal before making request
-            if (this.needsRenewal()) {
-                await this.checkAndRenewToken();
-            }
-
-            return await this.executeRequest({ url, ...options });
+          if (this.isRefreshing) {
+            return await this.addToQueue({ url: timestampedUrl.toString(), ...options });
+          }
+      
+          if (this.needsRenewal()) {
+            await this.checkAndRenewToken();
+          }
+      
+          return await this.executeRequest({ url: timestampedUrl.toString(), ...options });
         } catch (error) {
-            if (error.message === 'Token expired' || error.response?.status === 401) {
-                this.handleAuthError();
-            }
-            throw error;
+          if (error.message === 'Token expired' || error.response?.status === 401) {
+            this.handleAuthError();
+          }
+          throw error;
         }
-    }
+      }
 
     handleAuthError() {
         this.stopTokenRenewal();

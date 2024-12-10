@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/home.jsx'
 import SettingsPage from './pages/settings.jsx'
 import ServiceHealthMonitor from './components/health.jsx'
+import UserProfilePage from './pages/profile.jsx'
 
 function App() {
   useEffect(() => {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/profile/:userId" element={<UserProfilePage />} />
         <Route path="/" element={<HomePage /> } />
       </Routes>
     </BrowserRouter>
