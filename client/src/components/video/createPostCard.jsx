@@ -11,8 +11,8 @@ import {
   RefreshCw,
   Clock
 } from 'lucide-react';
-import { auth } from '../../frameworks/auth';
-import UserAvatar from '../user/avatar.jsx';
+import { auth } from '@/frameworks/auth';
+import UserAvatar from '@/components/user/avatar.jsx';
 
 const SUPPORTED_FORMATS = [
   'video/mp4',

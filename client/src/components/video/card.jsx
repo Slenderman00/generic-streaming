@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from './videoPlayer';
 import { Card } from '@/components/ui/card';
-import UserAvatar from '../user/avatar';
+import UserAvatar from '@/components/user/avatar';
 import { ChevronLeft, ChevronRight, Trash2, MoreHorizontal, Heart, Clock } from 'lucide-react';
 import { auth } from '@/frameworks/auth';
 
