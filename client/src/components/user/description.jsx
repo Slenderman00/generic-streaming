@@ -24,8 +24,8 @@ const ProfileDescription = () => {
           throw new Error('Failed to fetch profile');
         }
       } catch (err) {
-        setError('Failed to load description');
-        setStatus('error');
+        // setError('Failed to load description');
+        // setStatus('error');
       }
     };
 

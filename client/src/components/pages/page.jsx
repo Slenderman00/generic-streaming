@@ -32,7 +32,7 @@ const Navbar = () => {
           </li>
           <li>
             <Link
-              to={`/profile/${auth.getUser().id}`}
+              to={`/profile/${auth.getUser()?.id}`}
               className={`flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 rounded-lg transition-colors ${
                 isPersonalFeed
                   ? 'bg-purple-100 text-purple-800'

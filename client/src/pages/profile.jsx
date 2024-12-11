@@ -13,7 +13,7 @@ const UserProfilePage = () => {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [username, setUsername] = useState(null);
-    const [isOwnProfile, setIsOwnProfile] = useState(false);
+    const [isOwnProfile, setIsOwnProfile] = useState(true);
     const [showImageUpload, setShowImageUpload] = useState(false);
     const [showBannerUpload, setShowBannerUpload] = useState(false);
     const [bannerUrl, setBannerUrl] = useState(null);
@@ -48,7 +48,12 @@ const UserProfilePage = () => {
                 }
             }
         } catch (err) {
-            navigate('/');
+            if(!isOwnProfile) {
+                navigate('/');
+            }
+
+            const username = await auth.fetchUsername(userId);
+            setUsername(username);
         }
     };
 
