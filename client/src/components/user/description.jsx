@@ -12,7 +12,6 @@ const ProfileDescription = () => {
 
   const VITE_USER_SETTINGS_URL = import.meta.env.VITE_USER_SETTINGS_URL;
 
-  // Fetch initial description
   useEffect(() => {
     const fetchDescription = async () => {
       try {
@@ -33,17 +32,14 @@ const ProfileDescription = () => {
     fetchDescription();
   }, []);
 
-  // Handle description updates
   const handleDescriptionChange = (newDescription) => {
     setDescription(newDescription);
     setStatus('loading');
 
-    // Clear existing timeout
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
 
-    // Set new timeout for saving
     const timeoutId = setTimeout(async () => {
       try {
         const response = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profile`, {
@@ -57,7 +53,6 @@ const ProfileDescription = () => {
         if (response.ok) {
           setStatus('success');
           setOriginalDescription(newDescription);
-          // Reset success status after 2 seconds
           setTimeout(() => setStatus('idle'), 2000);
         } else {
           throw new Error('Failed to update description');
@@ -82,7 +77,6 @@ const ProfileDescription = () => {
           maxLength={1000}
         />
         
-        {/* Status indicator */}
         <div className="absolute right-2 top-2">
           {status === 'loading' && (
             <Loader className="h-5 w-5 text-gray-400 animate-spin" />
@@ -93,12 +87,10 @@ const ProfileDescription = () => {
         </div>
       </div>
 
-      {/* Character counter */}
       <div className="text-sm text-gray-500">
         {description.length}/1000 characters
       </div>
 
-      {/* Error message */}
       {status === 'error' && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -106,7 +98,6 @@ const ProfileDescription = () => {
         </Alert>
       )}
 
-      {/* Unsaved changes indicator */}
       {description !== originalDescription && status !== 'loading' && status !== 'success' && (
         <div className="text-sm text-amber-600">
           Unsaved changes
