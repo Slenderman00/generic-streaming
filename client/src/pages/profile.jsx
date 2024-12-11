@@ -86,12 +86,13 @@ const UserProfilePage = () => {
                         )}
                     </div>
                     <div className="absolute -bottom-16 left-8 flex items-end">
-                        <div
-                            className="cursor-pointer"
-                            onClick={() => isOwnProfile && setShowImageUpload(true)}
-                        >
-                            <UserAvatar size="lg" userId={userId} className="w-32 h-32 border-4 border-white" />
-                        </div>
+                        <UserAvatar
+                            size="lg"
+                            userId={userId}
+                            className="w-32 h-32 border-4 border-white"
+                            enableHover={isOwnProfile}
+                            onPress={() => isOwnProfile && setShowImageUpload(true)}
+                        />
                         <div className="-ml-2 mb-12">
                             <div className="bg-white rounded-lg px-3">
                                 <h2 className="relative group">
