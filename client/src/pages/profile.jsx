@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Camera } from 'lucide-react';
 import { auth } from '@/frameworks/auth';
 import PostFeed from '../components/video/postFeed';
 import UserAvatar from '@/components/user/avatar';
 import ProfileDescription from '@/components/user/description';
 import ProfileImageUpload from '@/components/user/image';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import Page from '../components/pages/page';
 
 const UserProfilePage = () => {
     const { userId } = useParams();
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
-    const [error, setError] = useState(null);
+    const [username, setUsername] = useState(null);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [showImageUpload, setShowImageUpload] = useState(false);
     const [showBannerUpload, setShowBannerUpload] = useState(false);
     const [bannerUrl, setBannerUrl] = useState(null);
-    const [bannerKey, setBannerKey] = useState(0); // Add a key to force image refresh
+    const [bannerKey, setBannerKey] = useState(0);
 
     const VITE_USER_SETTINGS_URL = import.meta.env.VITE_USER_SETTINGS_URL;
     const VITE_IMAGE_SERVICE_URL = import.meta.env.VITE_IMAGE_SERVICE_URL;
@@ -25,10 +25,10 @@ const UserProfilePage = () => {
     useEffect(() => {
         const currentUser = auth.getUser();
         setIsOwnProfile(currentUser?.id === userId);
-        fetchProfile();
+        fetchProfileAndUsername();
     }, [userId]);
 
-    const fetchProfile = async () => {
+    const fetchProfileAndUsername = async () => {
         try {
             const response = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profiles/${userId}`);
             if (!response.ok) throw new Error('Failed to fetch profile');
@@ -36,13 +36,16 @@ const UserProfilePage = () => {
             const data = await response.json();
             setProfile(data.profile);
 
+            const username = await auth.fetchUsername(userId);
+            setUsername(username);
+
             if (data.profile.bannerId) {
                 await fetchBannerImage(data.profile.bannerId);
             } else {
                 setBannerUrl(null);
             }
         } catch (err) {
-            setError('No profile data found');
+            navigate('/');
         }
     };
 
@@ -59,19 +62,17 @@ const UserProfilePage = () => {
             }
             return null;
         } catch (err) {
-            console.error('Error fetching banner image:', err);
             return null;
         }
     };
 
     const handleImageUploadSuccess = async () => {
-        await fetchProfile();
-        setBannerKey(prev => prev + 1); // Increment key to force image refresh
+        await fetchProfileAndUsername();
+        setBannerKey(prev => prev + 1);
         setShowBannerUpload(false);
         setShowImageUpload(false);
     };
 
-    // Cleanup function for the banner URL object
     useEffect(() => {
         return () => {
             if (bannerUrl) {
@@ -80,8 +81,12 @@ const UserProfilePage = () => {
         };
     }, [bannerUrl]);
 
+    if (!username) {
+        return null;
+    }
+
     return (
-        <Page title={profile?.username || 'Profile'}>
+        <Page title={username}>
             <div className="max-w-4xl mx-auto">
                 <div className="relative">
                     <div
@@ -90,7 +95,7 @@ const UserProfilePage = () => {
                     >
                         {bannerUrl && (
                             <img
-                                key={bannerKey} // Add key to force re-render
+                                key={bannerKey}
                                 src={bannerUrl}
                                 alt="Profile banner"
                                 className="w-full h-full object-cover"
@@ -102,21 +107,26 @@ const UserProfilePage = () => {
                             </div>
                         )}
                     </div>
-                    <div className="absolute -bottom-16 left-8">
+                    <div className="absolute -bottom-16 left-8 flex items-end">
                         <div
                             className="cursor-pointer"
                             onClick={() => isOwnProfile && setShowImageUpload(true)}
                         >
                             <UserAvatar size="lg" userId={userId} className="w-32 h-32 border-4 border-white" />
                         </div>
+                        <div className="-ml-2 mb-12">
+                            <div className="bg-white rounded-lg px-3">
+                                <h2 className="relative group">
+                                    <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent hover:from-purple-500 hover:to-blue-500 transition-colors duration-300">
+                                        {username}
+                                    </span>
+                                    <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-purple-600 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                                </h2>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="mt-20 px-8">
-                    {error && (
-                        <Alert variant="destructive" className="mb-4">
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    )}
                     <div className="mb-8">
                         {isOwnProfile ? (
                             <ProfileDescription />

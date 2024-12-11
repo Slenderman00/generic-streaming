@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { User, Loader } from 'lucide-react';
 import { auth } from '../../frameworks/auth';
+import { useNavigate } from 'react-router-dom';
 
-const UserAvatar = ({ 
-  size = 'md',  // sm, md, lg
+const UserAvatar = ({
+  size = 'md', // sm, md, lg
   showLoading = true,
   className = '',
   userId = '',
 }) => {
+  const navigate = useNavigate();
   const user = auth.getUser();
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,9 +41,7 @@ const UserAvatar = ({
         setLoading(false);
         return;
       }
-
       let profileResponse;
-
       try {
         if (!userId) {
           profileResponse = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profile`);
@@ -51,14 +51,11 @@ const UserAvatar = ({
         if (!profileResponse.ok) {
           throw new Error('Failed to fetch profile');
         }
-
         const profileData = await profileResponse.json();
-        
         if (profileData.profile.imageId) {
           const imageResponse = await auth.doRequest(
             `${VITE_IMAGE_SERVICE_URL}/images/${profileData.profile.imageId}`
           );
-          
           if (imageResponse.ok) {
             const blob = await imageResponse.blob();
             setImageUrl(URL.createObjectURL(blob));
@@ -70,9 +67,7 @@ const UserAvatar = ({
         setLoading(false);
       }
     };
-
     fetchProfileImage();
-    
     return () => {
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
@@ -80,23 +75,39 @@ const UserAvatar = ({
     };
   }, [user?.id]);
 
+  const handleClick = () => {
+    const profileUserId = userId || user?.id;
+    if (profileUserId) {
+      navigate(`/profile/${profileUserId}`);
+    }
+  };
+
   const sizeClasses = sizes[size] || sizes.md;
 
   return (
-    <div 
+    <div
       className={`
-        relative rounded-full overflow-hidden bg-purple-100 
+        relative rounded-full overflow-hidden bg-purple-100
         ring-2 ring-purple-200 flex items-center justify-center
+        cursor-pointer hover:ring-purple-300 transition-all
         ${sizeClasses.container} ${className}
       `}
       title={user?.username || 'Guest'}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleClick();
+        }
+      }}
     >
       {loading && showLoading ? (
         <Loader className={`text-purple-500 animate-spin ${sizeClasses.loader}`} />
       ) : imageUrl ? (
-        <img 
-          src={imageUrl} 
-          alt={user?.username || 'User avatar'} 
+        <img
+          src={imageUrl}
+          alt={user?.username || 'User avatar'}
           className="w-full h-full object-cover"
         />
       ) : (
