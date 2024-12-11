@@ -3,38 +3,65 @@ import { auth } from '../../frameworks/auth';
 import CreatePostCard from './createPostCard';
 import { PostCard } from './card';
 
-const PostFeed = () => {
+const PostFeed = ({ userId }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [myUserId, setMyUserId] = useState(null);
   const observerRef = useRef();
   const lastPostRef = useRef();
 
   const POST_READ_URL = import.meta.env.VITE_POST_READ_SERVICE_URL;
   const POST_WRITE_URL = import.meta.env.VITE_POST_WRITE_SERVICE_URL;
 
-  const fetchPosts = async (pageNum) => {
-    if (loading || !hasMore) return;
+  const fetchPosts = async (pageNum, force = false) => {
+    console.log('fetchPosts called with page:', pageNum, 'force:', force);
+    console.log('Current loading state:', loading);
+    console.log('Current hasMore state:', hasMore);
+    
+    if (loading || (!hasMore && !force)) {
+      console.log('Exiting fetchPosts early due to:', loading ? 'loading' : 'no more posts');
+      return;
+    }
 
     setLoading(true);
     try {
-      const response = await auth.doRequest(`${POST_READ_URL}/posts?page=${pageNum}&limit=10`);
+      const baseUrl = `${POST_READ_URL}/posts?page=${pageNum}&limit=10`;
+      const url = userId ? `${baseUrl}&userId=${userId}` : baseUrl;
+      
+      console.log('Fetching from URL:', url);
+      const response = await auth.doRequest(url);
       const data = await response.json();
+      console.log('Received data:', data);
 
       if (data.status === 'SUCCESS') {
         const newPosts = data.posts;
-        setPosts(prev => pageNum === 1 ? newPosts : [...prev, ...newPosts]);
+        console.log('New posts received:', newPosts.length);
+        setPosts(prev => {
+          const updatedPosts = pageNum === 1 ? newPosts : [...prev, ...newPosts];
+          console.log('Updated posts array:', updatedPosts.length);
+          return updatedPosts;
+        });
         setHasMore(newPosts.length === 10);
       } else {
         throw new Error(data.error || 'Failed to fetch posts');
       }
     } catch (err) {
+      console.error('Error in fetchPosts:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const refreshPosts = async () => {
+    console.log('refreshPosts called');
+    setHasMore(true);
+    setPage(1);
+    await fetchPosts(1, true); // Force fetch regardless of hasMore state
+    console.log('refreshPosts completed');
   };
 
   const handleDelete = async (postId) => {
@@ -78,14 +105,27 @@ const PostFeed = () => {
     }
   };
 
+  const handlePostCreated = async () => {
+    console.log('handlePostCreated called');
+    try {
+      await refreshPosts();
+      console.log('Posts refreshed successfully');
+    } catch (err) {
+      console.error('Error in handlePostCreated:', err);
+    }
+  };
+
   useEffect(() => {
-    fetchPosts(1);
+    console.log('Initial useEffect running');
+    fetchPosts(1, true);  // Force initial fetch
+    setMyUserId(auth.getUser().id);
   }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && hasMore && !loading) {
+          console.log('Intersection observed, incrementing page');
           setPage(prev => prev + 1);
         }
       },
@@ -102,6 +142,7 @@ const PostFeed = () => {
   }, [hasMore, loading]);
 
   useEffect(() => {
+    console.log('Page changed to:', page);
     if (page > 1) {
       fetchPosts(page);
     }
@@ -122,14 +163,15 @@ const PostFeed = () => {
     };
   }, [posts]);
 
+  const shouldShowCreatePost = !userId || userId === myUserId;
+
   return (
     <div className="mx-auto p-4">
-      <div className="mb-6">
-        <CreatePostCard onPostCreated={() => {
-          setPage(1);
-          fetchPosts(1);
-        }} />
-      </div>
+      {shouldShowCreatePost && (
+        <div className="mb-6">
+          <CreatePostCard onPostCreated={handlePostCreated} />
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">

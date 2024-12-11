@@ -7,6 +7,7 @@ const ProfileImageUpload = ({ isBanner = false, onClose, onImageUpdate }) => {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [imageUrl, setImageUrl] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const fileInputRef = useRef(null);
   const VITE_IMAGE_SERVICE_URL = import.meta.env.VITE_IMAGE_SERVICE_URL;
   const VITE_USER_SETTINGS_URL = import.meta.env.VITE_USER_SETTINGS_URL;
@@ -23,7 +24,10 @@ const ProfileImageUpload = ({ isBanner = false, onClose, onImageUpdate }) => {
             const blob = await imageResponse.blob();
             const url = URL.createObjectURL(blob);
             setImageUrl(url);
-            if (onImageUpdate) onImageUpdate(url);
+            // Only call onImageUpdate if this is NOT the initial load
+            if (onImageUpdate && !isInitialLoad) {
+              onImageUpdate(url);
+            }
           }
         }
       }
@@ -35,6 +39,9 @@ const ProfileImageUpload = ({ isBanner = false, onClose, onImageUpdate }) => {
 
   useEffect(() => {
     fetchImage();
+    // After initial fetch, set isInitialLoad to false
+    setIsInitialLoad(false);
+    
     // Cleanup function to revoke object URLs
     return () => {
       if (imageUrl) {
@@ -96,6 +103,7 @@ const ProfileImageUpload = ({ isBanner = false, onClose, onImageUpdate }) => {
         const blob = await imageResponse.blob();
         const newUrl = URL.createObjectURL(blob);
         setImageUrl(newUrl);
+        // Always call onImageUpdate for manual uploads
         if (onImageUpdate) onImageUpdate(newUrl);
       }
 

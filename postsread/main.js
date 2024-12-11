@@ -18,7 +18,6 @@ app.use(cors({
     credentials: true
 }));
 
-// JWT verification middleware
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -38,14 +37,22 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// Get all posts endpoint
 app.get('/posts', verifyToken, async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, userId } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     try {
+        // Create base where clause
+        const whereClause = {};
+        
+        // Add userId filter if provided
+        if (userId) {
+            whereClause.userId = userId;
+        }
+
         const [posts, totalPosts] = await Promise.all([
             prisma.post.findMany({
+                where: whereClause,
                 take: parseInt(limit),
                 skip,
                 orderBy: {
@@ -65,7 +72,9 @@ app.get('/posts', verifyToken, async (req, res) => {
                     }
                 }
             }),
-            prisma.post.count()
+            prisma.post.count({
+                where: whereClause
+            })
         ]);
 
         const transformedPosts = posts.map(post => ({
@@ -94,77 +103,11 @@ app.get('/posts', verifyToken, async (req, res) => {
     }
 });
 
-// Get posts by user ID endpoint
-app.get('/users/:userId/posts', verifyToken, async (req, res) => {
-    const { userId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    try {
-        const [posts, totalPosts] = await Promise.all([
-            prisma.post.findMany({
-                where: {
-                    userId
-                },
-                take: parseInt(limit),
-                skip,
-                orderBy: {
-                    createdAt: 'desc'
-                },
-                include: {
-                    _count: {
-                        select: {
-                            likes: true
-                        }
-                    },
-                    likes: {
-                        where: {
-                            userId: req.user.userId
-                        },
-                        take: 1
-                    }
-                }
-            }),
-            prisma.post.count({
-                where: {
-                    userId
-                }
-            })
-        ]);
-
-        const transformedPosts = posts.map(post => ({
-            ...post,
-            likes_count: post._count.likes,
-            liked_by_user: post.likes.length > 0,
-            likes: undefined,
-            _count: undefined
-        }));
-
-        res.json({
-            status: 'SUCCESS',
-            posts: transformedPosts,
-            pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                total: totalPosts
-            }
-        });
-    } catch (error) {
-        console.error('Get user posts error:', error);
-        res.status(500).json({
-            status: 'ERROR',
-            error: 'Failed to fetch user posts'
-        });
-    }
-});
-
-// Like/Unlike a post
 app.post('/posts/:postId/like', verifyToken, async (req, res) => {
     const { postId } = req.params;
     const userId = req.user.userId;
 
     try {
-        // Check if post exists
         const post = await prisma.post.findUnique({
             where: { id: postId }
         });
@@ -176,7 +119,6 @@ app.post('/posts/:postId/like', verifyToken, async (req, res) => {
             });
         }
 
-        // Check if already liked
         const existingLike = await prisma.postLike.findUnique({
             where: {
                 postId_userId: {
@@ -187,7 +129,6 @@ app.post('/posts/:postId/like', verifyToken, async (req, res) => {
         });
 
         if (existingLike) {
-            // Unlike
             await prisma.postLike.delete({
                 where: {
                     postId_userId: {
@@ -197,7 +138,6 @@ app.post('/posts/:postId/like', verifyToken, async (req, res) => {
                 }
             });
         } else {
-            // Like
             await prisma.postLike.create({
                 data: {
                     postId,
@@ -219,7 +159,6 @@ app.post('/posts/:postId/like', verifyToken, async (req, res) => {
     }
 });
 
-// Health check endpoint
 app.get('/health', async (req, res) => {
     try {
         await prisma.$queryRaw`SELECT 1`;
@@ -230,7 +169,6 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// Cleanup Prisma connection on server shutdown
 process.on('beforeExit', async () => {
     await prisma.$disconnect();
 });

@@ -17,7 +17,6 @@ const UserProfilePage = () => {
     const [showImageUpload, setShowImageUpload] = useState(false);
     const [showBannerUpload, setShowBannerUpload] = useState(false);
     const [bannerUrl, setBannerUrl] = useState(null);
-    const [bannerKey, setBannerKey] = useState(0);
 
     const VITE_USER_SETTINGS_URL = import.meta.env.VITE_USER_SETTINGS_URL;
     const VITE_IMAGE_SERVICE_URL = import.meta.env.VITE_IMAGE_SERVICE_URL;
@@ -25,10 +24,10 @@ const UserProfilePage = () => {
     useEffect(() => {
         const currentUser = auth.getUser();
         setIsOwnProfile(currentUser?.id === userId);
-        fetchProfileAndUsername();
+        fetchProfile();
     }, [userId]);
 
-    const fetchProfileAndUsername = async () => {
+    const fetchProfile = async () => {
         try {
             const response = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profiles/${userId}`);
             if (!response.ok) throw new Error('Failed to fetch profile');
@@ -40,37 +39,17 @@ const UserProfilePage = () => {
             setUsername(username);
 
             if (data.profile.bannerId) {
-                await fetchBannerImage(data.profile.bannerId);
-            } else {
-                setBannerUrl(null);
+                const bannerResponse = await auth.doRequest(
+                    `${VITE_IMAGE_SERVICE_URL}/images/${data.profile.bannerId}`
+                );
+                if (bannerResponse.ok) {
+                    const blob = await bannerResponse.blob();
+                    setBannerUrl(URL.createObjectURL(blob));
+                }
             }
         } catch (err) {
             navigate('/');
         }
-    };
-
-    const fetchBannerImage = async (bannerId) => {
-        try {
-            const bannerResponse = await auth.doRequest(
-                `${VITE_IMAGE_SERVICE_URL}/images/${bannerId}`
-            );
-            if (bannerResponse.ok) {
-                const blob = await bannerResponse.blob();
-                const url = URL.createObjectURL(blob);
-                setBannerUrl(url);
-                return url;
-            }
-            return null;
-        } catch (err) {
-            return null;
-        }
-    };
-
-    const handleImageUploadSuccess = async () => {
-        await fetchProfileAndUsername();
-        setBannerKey(prev => prev + 1);
-        setShowBannerUpload(false);
-        setShowImageUpload(false);
     };
 
     useEffect(() => {
@@ -95,7 +74,6 @@ const UserProfilePage = () => {
                     >
                         {bannerUrl && (
                             <img
-                                key={bannerKey}
                                 src={bannerUrl}
                                 alt="Profile banner"
                                 className="w-full h-full object-cover"
@@ -117,15 +95,15 @@ const UserProfilePage = () => {
                         <div className="-ml-2 mb-12">
                             <div className="bg-white rounded-lg px-3">
                                 <h2 className="relative group">
-                                    <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent hover:from-purple-500 hover:to-blue-500 transition-colors duration-300">
+                                    <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                         {username}
                                     </span>
-                                    <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-purple-600 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                                 </h2>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="mt-20 px-8">
                     <div className="mb-8">
                         {isOwnProfile ? (
@@ -134,11 +112,12 @@ const UserProfilePage = () => {
                             <p className="text-gray-700">{profile?.description || 'No description available.'}</p>
                         )}
                     </div>
+
                     {showImageUpload && isOwnProfile && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                             <div className="bg-white p-6 rounded-lg max-w-md w-full">
                                 <h2 className="text-xl font-semibold mb-4">Update Profile Picture</h2>
-                                <ProfileImageUpload onSuccess={handleImageUploadSuccess} />
+                                <center><ProfileImageUpload onImageUpdate={() => window.location.reload()} /></center>
                                 <button
                                     onClick={() => setShowImageUpload(false)}
                                     className="mt-4 w-full py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
@@ -153,7 +132,7 @@ const UserProfilePage = () => {
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                             <div className="bg-white p-6 rounded-lg max-w-md w-full">
                                 <h2 className="text-xl font-semibold mb-4">Update Banner Image</h2>
-                                <ProfileImageUpload isBanner onSuccess={handleImageUploadSuccess} />
+                                <ProfileImageUpload isBanner onImageUpdate={() => window.location.reload()} />
                                 <button
                                     onClick={() => setShowBannerUpload(false)}
                                     className="mt-4 w-full py-2 bg-gray-200 rounded-lg hover:bg-gray-300"

@@ -29,7 +29,7 @@ const SUPPORTED_FORMATS = [
 const MAX_VIDEOS = 3;
 const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10GB
 
-const CreatePostCard = () => {
+const CreatePostCard = ({ onPostCreated }) => {
   const [postText, setPostText] = useState('');
   const [videos, setVideos] = useState([]);
   const [error, setError] = useState(null);
@@ -243,6 +243,7 @@ const CreatePostCard = () => {
       setVideos([]);
       videoIdsRef.current = new Set();
       setError(null);
+      onPostCreated();
     } catch (error) {
       setError(error.message);
     } finally {
