@@ -92,7 +92,6 @@ const UserAvatar = ({
         cursor-pointer hover:ring-purple-300 transition-all
         ${sizeClasses.container} ${className}
       `}
-      title={user?.username || 'Guest'}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -107,7 +106,6 @@ const UserAvatar = ({
       ) : imageUrl ? (
         <img
           src={imageUrl}
-          alt={user?.username || 'User avatar'}
           className="w-full h-full object-cover"
         />
       ) : (

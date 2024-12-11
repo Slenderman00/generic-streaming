@@ -66,7 +66,7 @@ const UserProfilePage = () => {
 
     return (
         <Page title={username}>
-            <div className="max-w-4xl mx-auto">
+            <div className="mx-auto">
                 <div className="relative">
                     <div
                         className="h-48 bg-gradient-to-r from-purple-500 to-blue-500 relative group cursor-pointer"
@@ -104,7 +104,7 @@ const UserProfilePage = () => {
                     </div>
                 </div>
 
-                <div className="mt-20 px-8">
+                <div className="mt-20">
                     <div className="mb-8">
                         {isOwnProfile ? (
                             <ProfileDescription />
