@@ -46,6 +46,7 @@ const UserAvatar = ({
         setLoading(false);
         return;
       }
+
       let profileResponse;
       try {
         if (!userId) {
@@ -53,9 +54,11 @@ const UserAvatar = ({
         } else {
           profileResponse = await auth.doRequest(`${VITE_USER_SETTINGS_URL}/profiles/${userId}`);
         }
+
         if (!profileResponse.ok) {
           throw new Error('Failed to fetch profile');
         }
+
         const profileData = await profileResponse.json();
         if (profileData.profile.imageId) {
           const imageResponse = await auth.doRequest(
@@ -72,6 +75,7 @@ const UserAvatar = ({
         setLoading(false);
       }
     };
+
     fetchProfileImage();
     return () => {
       if (imageUrl) {
@@ -113,20 +117,23 @@ const UserAvatar = ({
     >
       {loading && showLoading ? (
         <Loader className={`text-purple-500 animate-spin ${sizeClasses.loader}`} />
-      ) : imageUrl ? (
+      ) : (
         <>
-          <img
-            src={imageUrl}
-            className="w-full h-full object-cover"
-          />
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              className="w-full h-full object-cover"
+              alt="User avatar"
+            />
+          ) : (
+            <User className={`text-purple-500 ${sizeClasses.icon}`} />
+          )}
           {enableHover && (
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <Camera className={`text-white ${sizeClasses.hoverIcon}`} />
             </div>
           )}
         </>
-      ) : (
-        <User className={`text-purple-500 ${sizeClasses.icon}`} />
       )}
     </div>
   );
