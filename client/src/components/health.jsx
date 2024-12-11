@@ -23,7 +23,9 @@ const ServiceHealthMonitor = () => {
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
     try {
-      const response = await fetch(`${baseUrl}/health`, {
+      const timestampedUrl = new URL(`${baseUrl}/health`);
+      timestampedUrl.searchParams.set('_t', Date.now());
+      const response = await fetch(timestampedUrl.toString(), {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
