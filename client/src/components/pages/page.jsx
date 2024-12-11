@@ -7,7 +7,7 @@ import { auth } from '../../frameworks/auth';
 
 const Navbar = () => {
   const location = useLocation();
-  const isPersonalFeed = location.pathname.startsWith('/profile/');
+  const isPersonalFeed = location.pathname === `/profile/${auth.getUser()?.id}`;
   
   return (
     <nav className="w-full max-w-6xl bg-white shadow-xl rounded-2xl overflow-hidden border border-purple-200 flex items-center justify-between px-4 md:px-8 h-16 md:h-20">
