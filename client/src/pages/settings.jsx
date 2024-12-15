@@ -6,7 +6,7 @@ import ProfileImageUpload from '../components/user/image.jsx';
 
 const SettingsPage = () => {
     return (
-        <Page>
+        <Page title="Settings">
             <h2>Edit Profile</h2>
             <ProfileImageUpload />
             <br/>

@@ -5,7 +5,7 @@ import PostFeed from '../components/video/postFeed';
 
 const HomePage = () => {
     return (
-        <Page>
+        <Page title="General Feed">
             <PostFeed/>
         </Page>
     );
