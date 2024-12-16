@@ -33,11 +33,6 @@ const UserProfile = () => {
       </DropdownMenuTrigger>
       
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={handleSettings} className="cursor-pointer">
-          <Settings className="w-4 h-4 mr-2" />
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
           <LogOut className="w-4 h-4 mr-2" />
           Logout

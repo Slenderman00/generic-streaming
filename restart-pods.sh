@@ -12,7 +12,7 @@
 # echo "Waiting for pods to terminate..."
 # kubectl wait --for=delete pod/peakdns-0 --timeout=60s 2>/dev/null || true
 
-kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
