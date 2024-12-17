@@ -12,6 +12,7 @@ way out of scope for this project.
 0. Read the article `PEAK: Leveraging Proven Technologies to Create the Distributed System of the Future` to understand the architecture of the system.
 
 ## Using Linux, Minikube, Kubectl, Docker, and Helm
+### **Make sure to follow these instructions exactly. The project will NOT work if any of the steps are skipped.**
 
 1. Make sure you have Minikube, Kubectl, Docker, and Helm installed. (Building takes a while, be patient). the `k8s_apply.py` script is dependent on `python-dotenv` and `PyYAML`, you can choose between creating a venv and installing it in that or `pip install python-dotenv PyYAML --break-system-packages`
 2. Run the following command:
