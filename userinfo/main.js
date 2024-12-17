@@ -18,7 +18,6 @@ app.use(cors({
   credentials: true
 }));
 
-// JWT verification middleware
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -35,7 +34,6 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Get authenticated user's profile (private endpoint)
 app.get('/profile', verifyToken, async (req, res) => {
   try {
     const profile = await prisma.user.findUnique({
@@ -71,7 +69,6 @@ app.get('/profile', verifyToken, async (req, res) => {
 app.put('/profile', verifyToken, async (req, res) => {
   const { imageId, bannerId, description } = req.body;
 
-  // Validate input
   if ((imageId && !isValidUUID(imageId)) || (bannerId && !isValidUUID(bannerId))) {
     return res.status(400).json({ 
       status: 'ERROR',
@@ -155,7 +152,6 @@ app.get('/profiles/:userId', verifyToken, async (req, res) => {
       });
     }
 
-    // Rate limiting headers
     res.set({
       'X-RateLimit-Limit': '100',
       'X-RateLimit-Remaining': '99',

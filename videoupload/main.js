@@ -33,10 +33,8 @@ app.use(cors({
     credentials: true
 }));
 
-// Configure shared storage path
 const STORAGE_PATH = process.env.STORAGE_PATH;
 
-// Ensure storage directory exists
 async function ensureStorageExists() {
   try {
     await fs.access(STORAGE_PATH);
@@ -45,7 +43,6 @@ async function ensureStorageExists() {
   }
 }
 
-// Configure multer for video upload handling
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     await ensureStorageExists();
@@ -55,7 +52,6 @@ const storage = multer.diskStorage({
     const videoId = uuidv4();
     const fileExtension = path.extname(file.originalname);
     const filename = `${videoId}${fileExtension}`;
-    // Store videoId for later use in the request
     req.videoId = videoId;
     cb(null, filename);
   }
@@ -64,7 +60,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 * 1024, // 10GB limit
+    fileSize: 10 * 1024 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('video/')) {
@@ -75,7 +71,6 @@ const upload = multer({
   },
 });
 
-// JWT verification middleware
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -92,7 +87,6 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// RabbitMQ connection
 let channel;
 async function setupMessageQueue() {
   try {
@@ -105,7 +99,6 @@ async function setupMessageQueue() {
   }
 }
 
-// Upload endpoint
 app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
   try {
     if (!req.file) {
@@ -115,7 +108,6 @@ app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
     const videoId = req.videoId;
     const storagePath = path.join(STORAGE_PATH, req.file.filename);
 
-    // Save to database
     const video = await prisma.video.create({
       data: {
         id: videoId,
@@ -126,7 +118,6 @@ app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
       },
     });
 
-    // Send to message queue
     await channel.sendToQueue('video_processing', Buffer.from(JSON.stringify({
       videoId: video.id,
       storagePath: storagePath,
@@ -138,7 +129,6 @@ app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
       message: 'Video uploaded successfully and queued for processing',
     });
   } catch (error) {
-    // If there's an error, try to clean up the uploaded file
     if (req.file) {
       try {
         await fs.unlink(req.file.path);
@@ -151,12 +141,10 @@ app.post('/upload', verifyToken, upload.single('video'), async (req, res) => {
   }
 });
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
 
-// Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Error:', error);
   if (error instanceof multer.MulterError) {
@@ -168,10 +156,8 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server with logging
 async function startServer() {
   try {
-    // Log environment configuration (without sensitive data)
     console.log('Starting server with configuration:');
     console.log(`Port: ${port}`);
     console.log(`Storage Path: ${STORAGE_PATH}`);

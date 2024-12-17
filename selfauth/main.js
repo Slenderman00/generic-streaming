@@ -42,7 +42,7 @@ const generateToken = (userId, email, username) => {
     };
 };
 
-const authenticateToken = (req, res, next) => {
+const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
 
@@ -62,21 +62,17 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// endpoint to get username by user ID
-app.get('/auth/user/:userId', authenticateToken, async (req, res) => {
+app.get('/auth/user/:userId', verifyToken, async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Debug logging
         console.log('=== DEBUG: /auth/user/:userId ===');
         console.log('Requested User ID:', userId);
         console.log('Request User Object:', req.user);
         
-        // Log all users in the database
         const allUsers = await pool.query('SELECT id, email, username FROM users');
         console.log('All Users in Database:', allUsers.rows);
 
-        // Validate UUID format
         if (!userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
             console.log('DEBUG: Invalid UUID format');
             return res.status(400).json({
@@ -85,7 +81,6 @@ app.get('/auth/user/:userId', authenticateToken, async (req, res) => {
             });
         }
 
-        // Log the exact query being executed
         console.log('Executing query with userId:', userId);
         const result = await pool.query(
             'SELECT username FROM users WHERE id = $1',
@@ -120,9 +115,8 @@ app.get('/auth/user/:userId', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/auth/renew', authenticateToken, async (req, res) => {
+app.post('/auth/renew', verifyToken, async (req, res) => {
     try {
-        // Check if user still exists and is not banned
         const result = await pool.query(
             'SELECT * FROM users WHERE id = $1',
             [req.user.userId]
@@ -137,7 +131,6 @@ app.post('/auth/renew', authenticateToken, async (req, res) => {
 
         const user = result.rows[0];
 
-        // Generate new token
         const tokenData = generateToken(user.id, user.email, user.username);
         
         res.json({
@@ -260,7 +253,7 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
-app.post('/auth/signout', authenticateToken, (req, res) => {
+app.post('/auth/signout', verifyToken, (req, res) => {
     res.json({ status: 'SUCCESS' });
 });
 

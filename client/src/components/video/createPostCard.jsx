@@ -225,20 +225,16 @@ const CreatePostCard = ({ onPostCreated }) => {
       setIsSubmitting(true);
       setError(null);
 
-      // Upload all pending videos concurrently
       await uploadAllVideos();
 
-      // Validate video ownership
       const appendResponse = await auth.doRequest(`${VIDEO_STATUS_URL}/append-videos`);
       if (!appendResponse.ok) {
         throw new Error('Failed to validate video ownership');
       }
 
-      // Create the post with collected video IDs
       const videoIds = Array.from(videoIdsRef.current);
       await createPost(postText, videoIds);
 
-      // Reset state after successful post
       setPostText('');
       setVideos([]);
       videoIdsRef.current = new Set();

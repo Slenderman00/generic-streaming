@@ -8,7 +8,6 @@ import string
 from dotenv import load_dotenv
 
 
-# ANSI color codes
 class Colors:
     RED = "\033[91m"
     RESET = "\033[0m"
@@ -31,7 +30,7 @@ def setup_logging():
 
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-    logger.handlers = []  # Remove any existing handlers
+    logger.handlers = []
     logger.addHandler(handler)
 
 
@@ -83,7 +82,6 @@ def substitute_env_vars(content):
         return template.substitute(os.environ)
     except KeyError as e:
         logging.error(f"Missing required environment variable: {e}")
-        # Fall back to safe_substitute which leaves unknown variables unchanged
         return template.safe_substitute(os.environ)
 
 
@@ -99,10 +97,8 @@ def process_yaml_file(file_path, temp_dir):
         with open(file_path, "r") as f:
             content = f.read()
 
-        # Substitute environment variables
         processed_content = substitute_env_vars(content)
 
-        # Parse YAML to determine priority
         try:
             documents = list(yaml.safe_load_all(processed_content))
             if not documents or not any(documents):
@@ -120,7 +116,6 @@ def process_yaml_file(file_path, temp_dir):
             logging.error(f"YAML parsing error in {file_path}: {str(e)}")
             return None, float("inf")
 
-        # Create processed file in temp directory maintaining directory structure
         rel_path = os.path.relpath(file_path, start="./configs")
         processed_file_path = os.path.join(temp_dir, rel_path)
         os.makedirs(os.path.dirname(processed_file_path), exist_ok=True)
@@ -171,7 +166,6 @@ def apply_kubernetes_configs(directory, kubectl_path="kubectl"):
         "Starting ordered Kubernetes config application with environment substitution"
     )
 
-    # Verify kubectl exists
     try:
         subprocess.run(
             [kubectl_path, "version", "--client"], capture_output=True, check=True
@@ -183,14 +177,11 @@ def apply_kubernetes_configs(directory, kubectl_path="kubectl"):
         logging.error(f"kubectl not found at {kubectl_path}")
         return
 
-    # Create temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
         logging.info(f"Created temporary directory: {temp_dir}")
 
-        # Process and load files
         priority_files = load_yaml_files(directory, temp_dir)
 
-        # Apply files in priority order
         error_count = 0
         for priority in sorted(priority_files.keys()):
             for file_path in priority_files[priority]:

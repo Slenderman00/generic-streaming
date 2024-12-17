@@ -19,7 +19,6 @@ app.use(cors({
   credentials: true
 }));
 
-// JWT verification middleware
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -38,7 +37,6 @@ const verifyToken = (req, res, next) => {
 
 const generateToken = (userId, email, username, videoIds, existingExp) => {
   const now = Math.floor(Date.now() / 1000);
-  // Use the existing token's expiration time instead of creating a new one
   const exp = existingExp;
 
   const token = jwt.sign(
@@ -53,7 +51,6 @@ const generateToken = (userId, email, username, videoIds, existingExp) => {
   };
 };
 
-// Updated append-videos endpoint
 app.get('/append-videos', verifyToken, async (req, res) => {
   try {
       const videos = await prisma.video.findMany({
@@ -67,16 +64,14 @@ app.get('/append-videos', verifyToken, async (req, res) => {
 
       const videoIds = videos.map(video => video.id);
 
-      // Generate token using the expiration time from the current token
       const tokenData = generateToken(
           req.user.userId,
           req.user.email,
           req.user.username,
           videoIds,
-          req.user.exp // Use the expiration from the verified token
+          req.user.exp
       );
 
-      // Set the new token in the Authorization header
       res.set('Authorization', `Bearer ${tokenData.token}`);
 
       res.json({
@@ -93,7 +88,6 @@ app.get('/append-videos', verifyToken, async (req, res) => {
   }
 });
 
-// Get all videos for a user with detailed status
 app.get('/videos', verifyToken, async (req, res) => {
   try {
     const videos = await prisma.video.findMany({
@@ -220,7 +214,6 @@ app.get('/videos/:videoId', verifyToken, async (req, res) => {
   }
 });
 
-// Helper function to calculate estimated time remaining
 function calculateEstimatedTimeRemaining(progressHistory) {
   if (!progressHistory.length) return null;
   
@@ -253,12 +246,10 @@ function calculateEstimatedTimeRemaining(progressHistory) {
   return Math.round(estimatedSeconds);
 }
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
 
-// Start server
 app.listen(port, () => {
   console.log(`Video status service listening on port ${port}`);
 });

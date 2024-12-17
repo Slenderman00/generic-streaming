@@ -1,7 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 
-// Common video formats that are well-supported by ffmpeg
 export const SUPPORTED_INPUT_FORMATS = [
   // Container formats
   '.mp4',  // MPEG-4 Part 14
@@ -16,7 +15,6 @@ export const SUPPORTED_INPUT_FORMATS = [
   '.mts',  // AVCHD Video
 ];
 
-// Common video codecs that we can reliably transcode
 export const SUPPORTED_VIDEO_CODECS = [
   'h264',      // AVC/H.264
   'hevc',      // H.265/HEVC

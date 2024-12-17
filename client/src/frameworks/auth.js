@@ -250,7 +250,6 @@ class AuthFramework {
         }
     }
 
-    // User information methods
     getUser() {
         const token = this.getTokenContents();
         if (!token) return null;
@@ -266,7 +265,6 @@ class AuthFramework {
         return this.getToken() && !this.isTokenExpired();
     }
 
-    // HTTP request handling
     async executeRequest(request, token = null) {
         const currentToken = token || this.getToken();
         if (!currentToken) {
@@ -283,7 +281,6 @@ class AuthFramework {
             headers
         });
 
-        // Check for new token in response headers
         const newToken = response.headers.get('Authorization');
         if (newToken) {
             const tokenValue = newToken.split(' ')[1];
@@ -348,12 +345,11 @@ class AuthFramework {
     }
 }
 
-// Create and export the singleton instance
+
 export const auth = new AuthFramework({
     baseUrl: import.meta.env.VITE_AUTH_URL
 });
 
-// React Hook for using auth state
 export const useAuth = () => {
     const [user, setUser] = React.useState(auth.getUser());
     const [isAuthenticated, setIsAuthenticated] = React.useState(auth.isAuthenticated());

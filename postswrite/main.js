@@ -18,7 +18,7 @@ app.use(cors({
     credentials: true
 }));
 
-// JWT verification middleware
+
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {

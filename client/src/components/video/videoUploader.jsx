@@ -48,7 +48,6 @@ const VideoUploader = () => {
             setUploadStatus('error');
             clearInterval(intervalId);
           } else if (data.status === 'VALIDATING') {
-            // Add handling for validation status
             setEncodingProgress({ validating: { progress: 0 } });
           } else {
             setEncodingProgress(data.progress?.byResolution || {});
@@ -67,14 +66,11 @@ const VideoUploader = () => {
   const validateFile = (file) => {
     if (!file) return false;
     
-    // Check file type
     const isValidType = SUPPORTED_FORMATS.includes(file.type);
     
-    // Check file extension as fallback
     const fileExtension = `.${file.name.split('.').pop().toLowerCase()}`;
     const isValidExtension = SUPPORTED_EXTENSIONS.includes(fileExtension);
     
-    // Check file size (10GB limit)
     const isValidSize = file.size <= 10 * 1024 * 1024 * 1024;
 
     if (!isValidType && !isValidExtension) {
