@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nginx-config
-  namespace: hello-world
+  namespace: client
 data:
   nginx-status.conf: |
     server {

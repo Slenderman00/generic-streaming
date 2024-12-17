@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-world
-  namespace: hello-world
+  name: client
+  namespace: client
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: hello-world
+      app: client
   template:
     metadata:
       labels:
-        app: hello-world
+        app: client
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9113"
@@ -19,7 +19,8 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: localhost:5000/clientnginx:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 80
           name: http
