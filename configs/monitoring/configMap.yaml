@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadbalance-expressions
+  namespace: monitoring
+data:
+  monitoring: |
+    sum(
+      rate(container_cpu_usage_seconds_total{namespace="%namespace%", pod="%pod-name%"}[5m])
+    ) +
+    sum(
+      container_memory_working_set_bytes{namespace="%namespace%", pod="%pod-name%"} / 1024 / 1024
+    )

@@ -3,6 +3,9 @@ While all reports mentions IPv6, we had to disable this and switch back to IPv4 
 difficulty of setting up a local IPv6 network. Using IPv4 makes the instructions easier to follow.
 \
 This project only works on Linux, using iptables and **not nftables**.
+\
+We forgot to add the client service to all our diagrams as we were using a development version of the client service until late in the project. The client service is a frontend service that is used to interact with the other services.
+It works exactly like the other services except for being containers of nginx.
 
 # Instructions
 
@@ -45,7 +48,7 @@ This project only works on Linux, using iptables and **not nftables**.
     ./run-firefox-dns-browser.sh
     ```
 
-    This will start a containerized Firefox browser with the correct DNS settings. A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800). For this browser to work, you must enable `network.dns.disableIPv6` under `about:config`, as this browser is sometimes unwilling to send anything other than HTTPS AAAA requests.
+    This will start a containerized Firefox browser with the correct DNS settings. A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800). For this browser to work, you must enable `network.dns.disableIPv6` under `about:config`, as this browser is sometimes unwilling to send anything other than HTTP AAAA requests.
 
     Alternatively, if you are using Wayland as your compositor, you can try the following command to get a containerized Firefox browser that uses your host's display:
 
@@ -65,7 +68,7 @@ Be patient as the service might take a while to start up.
     ./peak-dind.sh
     ```
 A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800).
-Visit http://client.peak on the browser to see the service in action. You must enable `network.dns.disableIPv6` under `about:config`, as this browser is sometimes unwilling to send anything other than HTTPS AAAA requests.
+Visit http://client.peak on the browser to see the service in action. You must enable `network.dns.disableIPv6` under `about:config`, as this browser is sometimes unwilling to send anything other than HTTP AAAA requests.
 
 
 ## **Using Windows**
@@ -75,3 +78,76 @@ machine.
 
 ## **Technical Support**
 In the case of any issues I can be contacted at `contact@joar.me`.
+
+## User Stories
+
+### Story 1: User Registration
+As a user,  
+I want to be able to register an account using a username and a password,  
+So that I can access the streaming service.
+
+**Acceptance Criteria:**
+1. The registration screen is accessible from the home page.
+2. Users can enter a username and password.
+3. The system validates that the username is valid.
+4. An error message is displayed if the username is not valid.
+
+### Story 2: Feed Browser
+As a user,  
+I want to be able to browse feeds,  
+So that I can access and stream the content.
+
+**Acceptance Criteria:**
+1. A login prompt is shown if the user is not logged in.
+2. The homepage consists of a list of posts.
+3. Users can select the content they want to watch.
+4. The user is able to stream and interact with the content.
+
+### Story 3: Like/Unlike Posts
+As a user,  
+I want to be able to like or unlike posts,  
+So that I can express my preferences on the content.
+
+**Acceptance Criteria:**
+1. Users must be logged in to like or unlike posts.
+2. When a user likes a post, the like count increases.
+3. When a user unlikes a post, the like count decreases.
+4. The system should reflect the user's like status on each post.
+5. An error message is displayed if the like/unlike action fails.
+
+### Architecture
+An in depth explanation of the architecture together with diagrams can be found in the article `PEAK: Leveraging Proven Technologies to Create the Distributed System of the Future`.
+
+### Microservices Specific Requirements
+
+1. **Multiple Services:**
+   - The project uses multiple services such as `selfauth`, `videoupload`, `videoprocessing`, `videostatus`, `userinfo`, `imageupload`, `postsread`, `client` and `postswrite`.
+
+2. **Synchronous Communication:**
+   - Services communicate using synchronous communication, between prometheus and the services.
+
+3. **Asynchronous Communication:**
+   - Services communicate using asynchronous message queues, for example, using RabbitMQ for video processing tasks and the client 
+   intermediated communication.
+
+4. **Clear Structure and Functionality:**
+   - Each service has a clear structure and defined functionality.
+
+5. **Consistent Architecture:**
+   - The architecture is consistent with the documentation, and all services are described and documented.
+
+6. **Gateway:**
+   - The project uses a custom DNS server acting as a gateway for routing and service discovery.
+
+7. **Load Balancing:**
+   - PeakDNS performs metrics-based record management (Load Balancing) by removing unhealthy and overloaded services from the DNS records.
+   This can be seen in the PeakDNS stdout logs.
+
+8. **Health Check:**
+   - A grafana dashboard is available, it should be accessible at `http://monitoring.peak:3000` after the services have started. The password is `prom-operator` and the username is `admin`.
+
+9. **Central Configuration:**
+   - The project uses kubernetes an orchestrator and central configuration manager.
+
+10. **Containerization:**
+    - The project uses Docker for containerization, building container images, and running them.

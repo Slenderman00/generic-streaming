@@ -4,3 +4,6 @@ metadata:
   name: monitoring
   labels:
     dns.peak/domain: "monitoring.peak"
+    dns.peak/loadbalance: "configmap.loadbalance-expressions.monitoring"
+    dns.peak/loadbalance-mode: "excludeoverloaded"
+    dns.peak/overload-threshold: "1.5"
