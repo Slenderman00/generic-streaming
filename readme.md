@@ -1,13 +1,19 @@
 # Disclaimer
-While all reports mentions IPv6, we had to disable this and switch back to IPv4 due to 
-problems with my dual-stack setup. As everything happens in a virtual environment, there really 
-should not be any difference between the two.
+While all reports mentions IPv6, we had to disable this and switch back to IPv4 due to the 
+difficulty of setting up a local IPv6 network. Using IPv4 makes the instructions easier to follow.
+\
+This project only works on Linux, using iptables and **not nftables**. \
+Due to the experimental nature of the project, it is 
+more difficult to run it in a docker in docker setup. With time i probably would have managed to get this working, but it is 
+way out of scope for this project.
 
 # Instructions
 
-## Using Linux, Minikube, Docker, and Helm
+0. Read the article `PEAK: Leveraging Proven Technologies to Create the Distributed System of the Future` to understand the architecture of the system.
 
-1. Make sure you have Minikube, Docker, and Helm installed. (Building takes a while, be patient)
+## Using Linux, Minikube, Kubectl, Docker, and Helm
+
+1. Make sure you have Minikube, Kubectl, Docker, and Helm installed. (Building takes a while, be patient). the `k8s_apply.py` script is dependent on `python-dotenv` and `PyYAML`, you can choose between creating a venv and installing it in that or `pip install python-dotenv PyYAML --break-system-packages`
 2. Run the following command:
     ```bash
     ./restart-minikube.sh && ./build-restart-pods.sh
@@ -54,3 +60,6 @@ it on a virtual Ubuntu or Debian machine instead.
 
 ## **Video**
 Due to the complexity of the setup, we have taken the liberty of including a demonstration video of the service in action.
+
+## **Technical Support**
+In the case of any issues I can be contacted at `contact@joar.me`.
