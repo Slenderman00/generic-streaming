@@ -2,10 +2,7 @@
 While all reports mentions IPv6, we had to disable this and switch back to IPv4 due to the 
 difficulty of setting up a local IPv6 network. Using IPv4 makes the instructions easier to follow.
 \
-This project only works on Linux, using iptables and **not nftables**. \
-Due to the experimental nature of the project, it is 
-more difficult to run it in a docker in docker setup than just running it manually. With time i probably would have managed to get this working, but it is 
-way out of scope for this project.
+This project only works on Linux, using iptables and **not nftables**.
 
 # Instructions
 
@@ -13,6 +10,7 @@ way out of scope for this project.
 
 ## Using Linux, Minikube, Kubectl, Docker, and Helm
 ### **Make sure to follow these instructions exactly. The project will NOT work if any of the steps are skipped.**
+**8 GB of free RAM is required for this method.**
 
 1. Make sure you have Minikube, Kubectl, Docker, and Helm installed. (Building takes a while, be patient). the `k8s_apply.py` script is dependent on `python-dotenv` and `PyYAML`, you can choose between creating a venv and installing it in that or `pip install python-dotenv PyYAML --break-system-packages`
 2. Run the following command:
@@ -54,13 +52,26 @@ way out of scope for this project.
     ```bash
     ./run-firefox-dns.sh
     ```
+4. Visit http://client.peak in the browser to see the service in action.
+Be patient as the service might take a while to start up.
+
+## **Using Docker and minikube in Docker (Be patient)**
+**Note:** This method won't work on **Windows** as the windows docker driver doesn't support nested virtualization. This method is also not recommended as it is very slow and unstable. 
+**8 GB of free RAM is required for this method.**
+
+1. Make sure you have Docker installed.
+2. Run the following command:
+    ```bash
+    ./peak-dind.sh
+    ```
+A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800).
+Visit http://client.peak on the browser to see the service in action.
+
 
 ## **Using Windows**
 Due to this being server software, it won't work natively on Windows. You can try to run it in WSL2, but due to the complex networking setup I would recommend running 
-it on a virtual Ubuntu or Debian machine instead.
-
-## **Video**
-Due to the complexity of the setup, we have taken the liberty of including a demonstration video of the service in action.
+it on a virtual Ubuntu or Debian machine instead, or even better on a physical Linux
+machine.
 
 ## **Technical Support**
 In the case of any issues I can be contacted at `contact@joar.me`.
