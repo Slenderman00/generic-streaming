@@ -45,7 +45,7 @@ This project only works on Linux, using iptables and **not nftables**.
     ./run-firefox-dns-browser.sh
     ```
 
-    This will start a containerized Firefox browser with the correct DNS settings. A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800). For this browser to work, you might have to disable IPv6, and adjust the `fixup suffix` and `fixup prefix` settings found in `about:config`, as this browser is sometimes unwilling to send anything other than HTTPS AAAA requests.
+    This will start a containerized Firefox browser with the correct DNS settings. A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800). For this browser to work, you must enable `network.dns.disableIPv6` under `about:config`, as this browser is sometimes unwilling to send anything other than HTTPS AAAA requests.
 
     Alternatively, if you are using Wayland as your compositor, you can try the following command to get a containerized Firefox browser that uses your host's display:
 
@@ -65,7 +65,7 @@ Be patient as the service might take a while to start up.
     ./peak-dind.sh
     ```
 A web-based VNC server should be available at [http://127.0.0.1:5800](http://127.0.0.1:5800).
-Visit http://client.peak on the browser to see the service in action.
+Visit http://client.peak on the browser to see the service in action. You must enable `network.dns.disableIPv6` under `about:config`, as this browser is sometimes unwilling to send anything other than HTTPS AAAA requests.
 
 
 ## **Using Windows**

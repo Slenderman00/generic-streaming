@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: client
   labels:
-    dns.peak/domain: "hello.peak"
+    dns.peak/domain: "client.peak"
     dns.peak/loadbalance: "configmap.loadbalance-expressions.client"
     dns.peak/loadbalance-mode: "excludeoverloaded"
     dns.peak/overload-threshold: "1.5"
