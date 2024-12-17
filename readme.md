@@ -4,7 +4,7 @@ difficulty of setting up a local IPv6 network. Using IPv4 makes the instructions
 \
 This project only works on Linux, using iptables and **not nftables**. \
 Due to the experimental nature of the project, it is 
-more difficult to run it in a docker in docker setup. With time i probably would have managed to get this working, but it is 
+more difficult to run it in a docker in docker setup than just running it manually. With time i probably would have managed to get this working, but it is 
 way out of scope for this project.
 
 # Instructions
