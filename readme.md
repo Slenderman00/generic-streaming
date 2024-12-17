@@ -145,6 +145,7 @@ An in depth explanation of the architecture together with diagrams can be found 
 
 8. **Health Check:**
    - A grafana dashboard is available, it should be accessible at `http://monitoring.peak:3000` after the services have started. The password is `prom-operator` and the username is `admin`.
+   Prometheus is used to collect metrics from the pods and is available at `http://monitoring.peak:9090`.
 
 9. **Central Configuration:**
    - The project uses kubernetes an orchestrator and central configuration manager.
